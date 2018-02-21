@@ -1,5 +1,5 @@
 getDataForModulePainting <- function(){
-  source('dataPulling/pullExpressionAndPhenoWinsorized.R')
+  #source('dataPulling/pullExpressionAndPhenoWinsorized.R')
   source('pullADgenes.R')
   res <- list()
   names(geneExpressionForAnalysis) <- c('TCX',

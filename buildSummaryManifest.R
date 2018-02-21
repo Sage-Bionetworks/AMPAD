@@ -6,7 +6,7 @@ synapseClient::synapseLogin()
 adGeneticsSummary <- AMPAD::getAdGenetics()
 
 #####deg enrichments
-degSummary <- getDeg()
+degSummary <- AMPAD::getDeg()
 
 
 

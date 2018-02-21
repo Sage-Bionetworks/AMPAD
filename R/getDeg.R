@@ -4,17 +4,32 @@ getDeg <- function(synId='syn10338156'){
   degResObj <- synapseClient::synGet("syn10496554")
   load(degResObj@filePath)
   #source('enrichmentAnalysis/run_amp_ad_enrichment.R')
+  keep <- grep('^Diagnosis',names(amp.ad.de.geneSets))
+  keep <- intersect(keep,grep('AD-CONTROL',names(amp.ad.de.geneSets)))
+  amp.ad.de.geneSets <- amp.ad.de.geneSets[keep]
   degResults <- AMPAD::run_amp_ad_enrichment(amp.ad.de.geneSets,
                                       "degs",
                                       hgnc = FALSE,
                                       manifestId = synId)
+
+
+
   parseDegName <- function(x){
     library(dplyr)
     foo1 <- strsplit(x,'\\.')[[1]]
-    br <- foo1[1]
+
+    if(foo1[2]=='SEX' | foo1[2]=='Sex'){
+      br <- foo1[3]
+      cate <- paste0(foo1[c(1:2,4:(length(foo1) - 1))],collapse='_')
+    }else{
+      br <- foo1[2]
+      cate <- paste0(foo1[c(1,3:(length(foo1) - 1))],collapse = '_')
+    }
+
+    #br <- foo1[2]
     dir <- foo1[length(foo1)]
     #cate <- foo1[2]
-    cate <- paste0(foo1[2:(length(foo1) - 1)],collapse = '_')
+
     #if(length(grep(paste0('.',br,'_'),cate)) > 0) {
     #  cate <- gsub(paste0('.',br,'_'),'.',cate)
     #}
@@ -50,7 +65,7 @@ getDeg <- function(synId='syn10338156'){
 
   moduleSummaryDeg <- dplyr::left_join(moduleSet,degResultsModified)
 
-  moduleSummaryDeg$GeneSetBrainRegion[moduleSummaryDeg$GeneSetBrainRegion=='CER']<-'CBE'
+  #moduleSummaryDeg$GeneSetBrainRegion[moduleSummaryDeg$GeneSetBrainRegion=='CER']<-'CBE'
 
   ###match brain regions for clarity sake
   moduleSummaryDeg <- dplyr::filter(moduleSummaryDeg,ModuleBrainRegion==GeneSetBrainRegion)
