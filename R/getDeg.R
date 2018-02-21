@@ -60,7 +60,7 @@ getDeg <- function(synId='syn10338156'){
   moduleSummaryDeg$GeneSetADLinked <- rep(TRUE,nrow(moduleSummaryDeg))
   #moduleSummaryDeg$GeneSetADLinked[ad_related] <- TRUE
 
-  moduleSummaryDeg <- splitByBrainRegionAdjustPvalue(moduleSummaryDeg)
+  moduleSummaryDeg <- AMPAD::splitByBrainRegionAdjustPvalue(moduleSummaryDeg)
   moduleSummaryDeg$EvidenceClass <- rep('deg',nrow(moduleSummaryDeg))
   return(moduleSummaryDeg)
 }
