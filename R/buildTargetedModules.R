@@ -1,4 +1,4 @@
-buildTargetedModules <- function(tissueType,synId="syn10909307"){
+buildTargetedModules <- function(tissueType,synId="syn11869519"){
   library(dplyr)
   bar <- synapseClient::synTableQuery(paste0("SELECT * FROM ",synId))@values %>%
     dplyr::filter(ModuleMethod!='consensus' & ModuleBrainRegion==tissueType)
