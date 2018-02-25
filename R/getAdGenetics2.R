@@ -1,4 +1,4 @@
-getAdGenetics <- function(synId='syn10338156'){
+getAdGenetics2 <- function(synId='syn10338156'){
   moduleSet <- synapseClient::synTableQuery(paste0("SELECT DISTINCT ModuleNameFull, Module, method, brainRegion from ",synId))@values
   colnames(moduleSet)[c(3:4)] <- c('ModuleMethod','ModuleBrainRegion')
 
@@ -96,5 +96,5 @@ getAdGenetics <- function(synId='syn10338156'){
   moduleSummary <- rbind(moduleSummary,adTestSummary)
   moduleSummary$EvidenceClass <- 'genetics'
 
-  return(moduleSummary)
+  return(list(moduleSummary,adList))
 }
