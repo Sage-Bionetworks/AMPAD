@@ -89,7 +89,7 @@ getAdGenetics <- function(synId='syn10338156'){
   adTestSummary <- dplyr::left_join(moduleSet,
                                     adTest)
   adTestSummary <- AMPAD::splitByBrainRegionAdjustPvalue(adTestSummary)
-  View(adTestSummary)
+  #View(adTestSummary)
 
 
 

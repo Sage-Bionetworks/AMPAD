@@ -1,9 +1,11 @@
 qqplotFigure = function(){
   synapseClient::synapseLogin()
   adGeneticsSummaryAggOld <- AMPAD::getAdGenetics(synId='syn10915669')
-  adGeneticsSummaryAgg <- AMPAD::getAdGenetics(synId='syn11870970')
+  adGeneticsSummaryAgg <- AMPAD::getAdGenetics(synId='syn11926100')
   adGeneticsSummaryInd <- AMPAD::getAdGenetics(synId='syn10309369')
-  adGeneticsSummaryAgg2 <- AMPAD::getAdGenetics2(synId='syn11870970')
+  adGeneticsSummaryAgg2 <- AMPAD::getAdGenetics2(synId='syn11926100')
+  adGeneticsSummaryAgg3 <- AMPAD::getAdGenetics(synId = 'syn11870970')
+  adGeneticsSummaryTest <- AMPAD::getAdGenetics(synId = 'syn11932957')
 
   adList<-adGeneticsSummaryAgg2[[2]]
   amp.ad.de.geneSets <- AMPAD::makeDEGAD()
@@ -50,6 +52,21 @@ qqplotFigure = function(){
   foobarX3$pathway <- rownames(foobarX)
   foobarX4<-tidyr::gather(foobarX3,key='geneset',value='OR',-pathway)
 
+
+  load(synapseClient::synGet('syn11914811')@filePath)
+  all.gs <- all.gs[1:12]
+  foobarY <- utilityFunctions::outerSapplyParallel( utilityFunctions::fisherWrapperPval, all.gs, adListensg2,foo2ensg$GeneID)
+
+  foobarY <- data.frame(foobarY,stringsAsFactors=F)
+  foobarY$pathway <- rownames(foobarY)
+  foobarY2<-tidyr::gather(foobarY,key='geneset',value='pval',-pathway)
+
+  foobarY3 <- utilityFunctions::outerSapplyParallel( utilityFunctions::fisherWrapperOR, all.gs, adListensg2,foo2ensg$GeneID)
+  foobarY3 <- data.frame(foobarY3,stringsAsFactors=F)
+  foobarY3$pathway <- rownames(foobarY)
+  foobarY4<-tidyr::gather(foobarY3,key='geneset',value='OR',-pathway)
+
+
   load('cbe_res.rda')
   load('dlpfc_res.rda')
   load('phg_res.rda')
@@ -74,9 +91,34 @@ qqplotFigure = function(){
   gap::qqunif(foobarX2$pval,xlim=c(0,5),ylim=c(0,42),col='brown',pch=18)
   par(new=T)
   gap::qqunif(adGeneticsSummaryAgg$GeneSetAssociationStatistic,xlim=c(0,5),ylim=c(0,42),col='red',main='AD Gene-set Enrichments',pch=15)
+  par(new=T)
+  gap::qqunif(adGeneticsSummaryTest$GeneSetAssociationStatistic,xlim=c(0,5),ylim=c(0,42),col='darkblue')
+  par(new=T)
+  gap::qqunif(foobarY2$pval,xlim=c(0,5),ylim=c(0,42),col='red')
   #par(new=T)
   #gap::qqunif(adGeneticsSummaryAggOld$GeneSetAssociationStatistic,xlim=c(0,5),ylim=c(0,42),col='purple')
   legend('topleft',c('all modules','all DEG enriched modules','all DEGs','Zhang et al. 2013 modules','aggregate modules'),pch=c(3,16:18,15),col=c('blue','purple','green','brown','red'))
+
+
+  #####make a series of box plots of enrichment odds ratios, also of the percentage of significant associations
+  mean((adGeneticsSummaryInd$GeneSetAssociationStatistic)*nrow(adGeneticsSummaryInd)<0.05)
+
+  ga2<-dplyr::filter(adGeneticsSummaryInd,ModuleNameFull %in% uniqueMods)
+  mean(ga2$GeneSetAssociationStatistic*nrow(ga2)<0.05)
+  mean(foobar2$pval*nrow(foobar2)<0.05)
+  mean(foobarX2$pval*nrow(foobarX2)<0.05)
+  mean((adGeneticsSummaryAgg$GeneSetAssociationStatistic)*nrow(adGeneticsSummaryAgg)<0.05)
+  mean((adGeneticsSummaryAggOld$GeneSetAssociationStatistic)*nrow(adGeneticsSummaryAggOld)<0.05)
+  mean((adGeneticsSummaryAgg3$GeneSetAssociationStatistic)*nrow(adGeneticsSummaryAgg3)<0.05)
+  mean((adGeneticsSummaryTest$GeneSetAssociationStatistic)*nrow(adGeneticsSummaryTest)<0.05)
+  mean(foobarY2$pval*nrow(foobarY2) < 0.05)
+  #mean((adGeneticsSummaryInd))
+
+  vec1 <- (adGeneticsSummaryTest$GeneSetAssociationStatistic)*nrow(adGeneticsSummaryTest)<0.05
+  vec2 <- foobarY2$pval*nrow(foobarY2) < 0.05
+  vec3 <- (adGeneticsSummaryInd$GeneSetAssociationStatistic)*nrow(adGeneticsSummaryInd)<0.05
+  vec4 <- foobar2$pval*nrow(foobar2)<0.05
+  vec5 <- foobarX2$pval*nrow(foobarX2)<0.05
 
 
   png(file='agg_mod_figure.png',width=1600,height=1200,pointsize=40)

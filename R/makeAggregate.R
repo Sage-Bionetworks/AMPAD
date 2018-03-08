@@ -1,4 +1,4 @@
-makeAggregate <- function(tableName = 'collapsed ad meta modules February 21 2018'){
+makeAggregate <- function(tableName = 'collapsed ad meta modules February 27 2018'){
   synapseClient::synapseLogin()
   cat('building DLPFC...\n')
   DLPFCres <- AMPAD::buildTargetedModules('DLPFC')

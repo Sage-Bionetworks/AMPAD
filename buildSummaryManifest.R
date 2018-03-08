@@ -72,7 +72,7 @@ moduleCheatSheet <- dplyr::arrange(moduleCheatSheet,desc(degScore))
 
 degTopScores <- dplyr::select(moduleCheatSheet,degScore,ModuleNameFull)
 degTopScores <- dplyr::left_join(degTopScores,moduleSet)
-rSynapseUtilities::makeTable(degTopScores,tableName = "deg mods february 21 2018",projectId = 'syn5569099')
+rSynapseUtilities::makeTable(degTopScores,tableName = "deg mods february 27 2018",projectId = 'syn5569099')
 
 
 

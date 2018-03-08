@@ -5,7 +5,9 @@ output: html_notebook
 
 Create the qq plot.
 ```{r}
+
 AMPAD::qqplotFigure()
+
 ```
 
 Pull targeted genesets
@@ -22,17 +24,17 @@ targetedEnrichment <- list()
 targetedEnrichment$ad <- AMPAD::run_amp_ad_enrichment(targetedGeneSets$ad,
                                                       'AD',
                                                       hgnc = TRUE,
-                                                      manifestId = 'syn11870970')
+                                                      manifestId = 'syn11932957')
 
 targetedEnrichment$cell <- AMPAD::run_amp_ad_enrichment(targetedGeneSets$cell,
                                                         'Cell',
                                                         hgnc= TRUE,
-                                                        manifestId = 'syn11870970')
+                                                        manifestId = 'syn11932957')
 
 targetedEnrichment$deg <- AMPAD::run_amp_ad_enrichment(targetedGeneSets$deg,
                                                        'DEG',
                                                        hgnc=FALSE,
-                                                       manifestId = 'syn11870970')
+                                                       manifestId = 'syn11932957')
 
 
 ```
@@ -52,17 +54,18 @@ x- axis : module
 y- axis fisher-'s odds ratio
 
 ```{r}
-modMeta <- AMPAD::getModuleMetainfo('syn11870970')
+modMeta <- AMPAD::getModuleMetainfo('syn11932957')
 dummyDf <- dplyr::filter(targetedEnrichment$cell,adj.pval<=0.05)
 dummyDf <- dplyr::left_join(dummyDf,modMeta)
 dummyDf$ModuleBrainRegion <- factor(dummyDf$ModuleBrainRegion,levels = unique(dummyDf$ModuleBrainRegion))
 
 g <- ggplot2::ggplot(dummyDf,
                      ggplot2::aes(x = Module,
-                                  y = fisherOR,
-                                  fill = category))
-g <- g+ggplot2::geom_col(position = 'dodge')
-g <- g + ggplot2::scale_y_log10()
+                                  y = category,
+                                  size = fisherOR,
+                                  color = -log10(adj.pval)))
+g <- g+ggplot2::geom_count()
+#g <- g + ggplot2::scale_y_log10()
 g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
 g <- g + ggplot2::coord_flip()
 
@@ -80,10 +83,11 @@ dummyDf$ModuleBrainRegion <- factor(dummyDf$ModuleBrainRegion,levels = unique(du
 
 g <- ggplot2::ggplot(dummyDf,
                      ggplot2::aes(x = Module,
-                                  y = fisherOR,
-                                  fill = category))
-g <- g+ggplot2::geom_col(position = 'dodge')
-g <- g + ggplot2::scale_y_log10()
+                                  y = category,
+                                  size = fisherOR,
+                                  color = -log10(adj.pval)))
+g <- g+ggplot2::geom_count()
+#g <- g + ggplot2::scale_y_log10()
 g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
 g <- g + ggplot2::coord_flip()
 
@@ -145,6 +149,48 @@ g <- g + ggplot2::facet_grid(. ~ sex)
 g <- g + ggplot2::scale_y_log10()
 g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
 g <- g + ggplot2::coord_flip()
+
 g
+
+```
+
+
+Overlap plot
+
+```{r}
+AMPAD::pairwiseMatrixOfEnrichments('syn11932737')
+
+```
+Make PC statistics
+
+```{r}
+AMPAD::makePcStatistics('March 2 2018')
+```
+
+Run pathway enrichments and push to synapse
+
+
+```{r}
+pathwayGeneSets <- AMPAD::collatePathways()
+fullPathwayEnrichmentsList <- mapply(AMPAD::run_amp_ad_enrichment,
+                                 pathwayGeneSets,
+                                 names(pathwayGeneSets),
+                                 MoreArgs = list(hgnc = TRUE,
+                                                 manifestId = 'syn11932957'),
+                                 SIMPLIFY = FALSE)
+fullPathwayEnrichments <- do.call(rbind,fullPathwayEnrichmentsList)
+rSynapseUtilities::makeTable(fullPathwayEnrichments,
+                             "Aggregate Module Pathway Enrichments March 7 2018",
+                             'syn2370594')
+```
+
+
+Diagnose DEG differences
+```{r}
+load(synapseClient::synGet('syn10496554',version = 10)@filePath)
+amp.ad.de.geneSetsNew <- amp.ad.de.geneSets
+load(synapseClient::synGet('syn10496554',version = 9)@filePath)
+setdiff(amp.ad.de.geneSetsNew$`Diagnosis.Sex.DLPFC.AD-CONTROL.MALE.DOWN`,amp.ad.de.geneSets$`Diagnosis.Sex.DLPFC.AD-CONTROL.MALE.DOWN`)
+
 
 ```

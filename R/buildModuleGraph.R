@@ -1,22 +1,4 @@
-buildTargetedModules <- function(tissueType,synId="syn11925259"){
-  library(dplyr)
-  bar <- synapseClient::synTableQuery(paste0("SELECT * FROM ",synId))@values %>%
-    dplyr::filter(ModuleMethod!='consensus' & ModuleBrainRegion==tissueType)
-  moduleSet <- synapseClient::synTableQuery("SELECT DISTINCT ModuleNameFull, Module, method, brainRegion from syn10338156")@values
-  colnames(moduleSet)[c(3:4)] <- c('ModuleMethod','ModuleBrainRegion')
-  allMods <- synapseClient::synTableQuery("SELECT * FROM syn10338156")@values
-  pairwiseString <- paste0("SELECT * FROM syn10339153 where ModuleNameFull like \'%",
-                           tissueType,
-                           "\' and category like \'%",
-                           tissueType,
-                           "\'")
-  pairwise <- synapseClient::synTableQuery(pairwiseString)@values %>%
-    utilityFunctions::removeSwappedDupKeyValueDf() %>%
-    dplyr::mutate(adj=p.adjust(fisherPval,method='bonferroni')) %>%
-    dplyr::filter(adj<=0.05) %>%
-    dplyr::filter(from%in%bar$ModuleNameFull & to %in% bar$ModuleNameFull) %>%
-    dplyr::mutate(weight = 1/fisherOR)
-
+buildModuleGraph <- function(pairwise,allMods,tissueType){
   res <- list()
   res$moduleGraph <- pairwise
   res$moduleGraph$weight <- res$moduleGraph$weight+1e-15
@@ -151,6 +133,9 @@ buildTargetedModules <- function(tissueType,synId="syn11925259"){
                  SIMPLIFY=F)
   res$df <- do.call(rbind,res$df)
   exg <- utilityFunctions::convertEnsemblToHgnc(res$df$GeneID)
+  if(sum(duplicated(exg))>0){
+    exg <- exg[which(!duplicated(exg)),]
+  }
   res$df <- dplyr::left_join(res$df,exg,by = c('GeneID' = 'ensembl_gene_id'))
   return(res)
 }
