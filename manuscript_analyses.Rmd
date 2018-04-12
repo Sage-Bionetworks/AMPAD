@@ -12,14 +12,14 @@ AMPAD::qqplotFigure()
 
 Pull targeted genesets
 
-```{r}
+```{r,include =F}
 targetedGeneSets <- AMPAD::collateEnrichmentSets()
-str(targetedGeneSets)
+#str(targetedGeneSets)
 ```
 
 For each of the three build the data frame of the respective Analyses
 
-```{r}
+```{r,include=FALSE}
 targetedEnrichment <- list()
 targetedEnrichment$ad <- AMPAD::run_amp_ad_enrichment(targetedGeneSets$ad,
                                                       'AD',
@@ -36,6 +36,15 @@ targetedEnrichment$deg <- AMPAD::run_amp_ad_enrichment(targetedGeneSets$deg,
                                                        hgnc=FALSE,
                                                        manifestId = 'syn11932957')
 
+targetedEnrichment$degMeta <- AMPAD::run_amp_ad_enrichment(targetedGeneSets$degMeta,
+                                                           'DEGmeta',
+                                                           hgnc=FALSE,
+                                                           manifestId = 'syn11932957')
+
+targetedEnrichment$targetPathways <- AMPAD::run_amp_ad_enrichment(targetedGeneSets$targetedPathways,
+                                                           'TargetedPathways',
+                                                           hgnc=FALSE,
+                                                           manifestId = 'syn11932957')
 
 ```
 
@@ -46,6 +55,8 @@ Add adjusted p-values
 targetedEnrichment$ad$adj.pval <- p.adjust(targetedEnrichment$ad$fisherPval,method='fdr')
 targetedEnrichment$deg$adj.pval <- p.adjust(targetedEnrichment$deg$fisherPval,method='fdr')
 targetedEnrichment$cell$adj.pval <- p.adjust(targetedEnrichment$cell$fisherPval,method='fdr')
+targetedEnrichment$degMeta$adj.pval <- p.adjust(targetedEnrichment$degMeta$fisherPval,method='fdr')
+targetedEnrichment$targetPathways$adj.pval <- p.adjust(targetedEnrichment$targetPathways$fisherPval,method='fdr')
 ```
 
 Make cell type summary plots
@@ -64,9 +75,10 @@ g <- ggplot2::ggplot(dummyDf,
                                   y = category,
                                   size = fisherOR,
                                   color = -log10(adj.pval)))
-g <- g+ggplot2::geom_count()
+g <- g + ggplot2::geom_count()
 #g <- g + ggplot2::scale_y_log10()
 g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1))
 g <- g + ggplot2::coord_flip()
 
 g
@@ -95,6 +107,28 @@ g
 
 
 ```
+
+```{r}
+#modMeta <- AMPAD::getModuleMetainfo('syn11932957')
+dummyDf <- dplyr::filter(targetedEnrichment$targetPathways,adj.pval<=0.05)
+dummyDf <- dplyr::left_join(dummyDf,modMeta)
+dummyDf$ModuleBrainRegion <- factor(dummyDf$ModuleBrainRegion,levels = unique(dummyDf$ModuleBrainRegion))
+
+g <- ggplot2::ggplot(dummyDf,
+                     ggplot2::aes(x = Module,
+                                  y = category,
+                                  size = fisherOR,
+                                  color = -log10(adj.pval)))
+g <- g + ggplot2::geom_count()
+#g <- g + ggplot2::scale_y_log10()
+g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1))
+g <- g + ggplot2::coord_flip()
+
+g
+
+```
+
 
 
 Reformate DEG results for visualization
@@ -155,6 +189,47 @@ g
 ```
 
 
+```{r}
+degMeta <- targetedEnrichment$degMeta
+degMeta$adj.pval <- p.adjust(degMeta$fisherPval,method='fdr')
+degMeta <- dplyr::filter(degMeta,adj.pval<=0.05)
+dumfun <- function(x){
+  y<-grep('UP',x)
+  y2 <- grep('DOWN',x)
+  z <- x
+  z[y] <- 'Up'
+  z[y2] <- 'Down'
+  return(z)
+}
+sexfun <- function(x){
+  y<-grep('\\.FEMALE',x)
+  y2 <- grep('\\.MALE',x)
+  z <- rep('All',length(x))
+  z[y] <- 'Female'
+  z[y2] <- 'Male'
+  return(z)
+}
+degMeta <- dplyr::mutate(degMeta,direction = dumfun(category))
+degMeta <- dplyr::mutate(degMeta,sex = sexfun(category))
+degMeta <- dplyr::mutate(degMeta,dirbysex = paste0(direction,'.',sex))
+degMeta <- dplyr::left_join(degMeta,modMeta)
+```
+```{r}
+ind <- grep('fixed',degMeta$category)
+g <- ggplot2::ggplot(degMeta[ind,],ggplot2::aes(x = Module,
+                                      y = fisherOR,
+                                      fill = category))
+g <- g + ggplot2::geom_col(position = 'dodge')
+g <- g + ggplot2::facet_grid(. ~ sex)
+g <- g + ggplot2::scale_y_log10()
+g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+g <- g + ggplot2::coord_flip()
+
+g
+
+```
+
+
 Overlap plot
 
 ```{r}
@@ -194,3 +269,24 @@ setdiff(amp.ad.de.geneSetsNew$`Diagnosis.Sex.DLPFC.AD-CONTROL.MALE.DOWN`,amp.ad.
 
 
 ```
+
+
+look at glymphatic flow in tcx vs cbe
+```{r}
+foobar <- AMPAD::pullExpressionAndPhenoWinsorized()
+cbe_diag <- foobar$mayoCER$logitDiagnosis
+redCBEMatrix <- foobar$mayoCER[,colnames(foobar$mayoCER)%in%targetedGeneSets$targetedPathways$WP1877]
+ab <- svd(scale(redCBEMatrix))
+plot(as.factor(cbe_diag),ab$u[,2])
+summary(lm(ab$u[,3] ~ cbe_diag))
+pheatmap::pheatmap(cbind(cbe_diag,redCBEMatrix))
+
+tcx_diag <- foobar$mayoTCX$logitDiagnosis
+redTCXMatrix <- foobar$mayoTCX[,colnames(foobar$mayoTCX)%in%targetedGeneSets$targetedPathways$WP1877]
+ab2 <- svd(scale(redTCXMatrix))
+plot(as.factor(tcx_diag),ab2$u[,1])
+summary(lm(ab2$u[,3] ~ tcx_diag))
+pheatmap::pheatmap(cbind(tcx_diag,redTCXMatrix))
+
+```
+

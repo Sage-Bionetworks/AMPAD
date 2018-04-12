@@ -42,5 +42,10 @@ collateEnrichmentSets = function(){
   #pull cell types
   enrichmentSets$cell <- GeneSets$Cell_Markers
 
+  fob1 <- synapseClient::synGet('syn11914811')
+  load(fob1@filePath)
+  enrichmentSets$degMeta <- all.gs
+
+  enrichmentSets$targetedPathways <- AMPAD::getCuratedPathways()
   return(enrichmentSets)
 }
