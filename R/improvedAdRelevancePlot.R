@@ -110,7 +110,7 @@ improvedAdRelevancePlot <- function(){
                              GeneSetName,
                              GeneSetAssociationStatistic,
                              GeneSetEffect) %>%
-    dplyr::mutate(category = rep('Final Modules',nrow(adGeneticsSummaryTest)))
+    dplyr::mutate(category = rep('AD Endophenotypes (Modules)',nrow(adGeneticsSummaryTest)))
 
 
   # metaAnalysisEnrichment <- dplyr::left_join(foobarY2,foobarY4)
@@ -163,8 +163,12 @@ improvedAdRelevancePlot <- function(){
   summMatrix <- dplyr::summarise(summFullMatrix,
                                  percentSig = mean(significant),
                                  se = sd(significant)/sqrt(length(significant)))
+  summMatrix <- dplyr::arrange(summMatrix,(percentSig))
+  #summMatrix
 
-  summMatrix <- summMatrix[c(4,3,1,7,8,5,2,6),]
+  #summMatrix <- summMatrix[c(6,5,3,8,2,4,1),]
+  #summMatrix <- summMatrix[7:1,]
+  summMatrix <- summMatrix[-5,]
   summMatrix$category <- factor(summMatrix$category,levels = summMatrix$category)
 
   g <- ggplot2::ggplot(summMatrix,
@@ -177,6 +181,12 @@ improvedAdRelevancePlot <- function(){
                   width=.2,                    # Width of the error bars
                   position=ggplot2::position_dodge(.9))
   g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+
+  #g <- g + ggplot2::coord_flip()
+  g <- g + ggplot2::ggtitle('Enrichment for AD signatures')
+  g <- g + ggplot2::labs(x = 'System Biology Derived AD Geneset',
+                         y = 'Percent pairwise associations significant')
   g
+  ggplot2::ggsave('sig_enrichments_figure.png')
 
 }
