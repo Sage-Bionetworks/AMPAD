@@ -68,6 +68,7 @@ y- axis fisher-'s odds ratio
 modMeta <- AMPAD::getModuleMetainfo('syn11932957')
 dummyDf <- dplyr::filter(targetedEnrichment$cell,adj.pval<=0.05)
 dummyDf <- dplyr::left_join(dummyDf,modMeta)
+dummyDf$category <- gsub('Zhang\\.','',dummyDf$category)
 dummyDf$ModuleBrainRegion <- factor(dummyDf$ModuleBrainRegion,levels = unique(dummyDf$ModuleBrainRegion))
 
 g <- ggplot2::ggplot(dummyDf,
@@ -78,11 +79,14 @@ g <- ggplot2::ggplot(dummyDf,
 g <- g + ggplot2::geom_count()
 #g <- g + ggplot2::scale_y_log10()
 g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
-g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1))
+g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1), breaks = c(1.5, 3,8,20,50,110),trans='log')
 g <- g + ggplot2::coord_flip()
+g <- g + ggplot2::ggtitle('Enrichment for Cell Type Specific Signatures')
+g <- g + ggplot2::labs(y = 'Cell Type Signature',
+                       x = 'AD Endophenotype')
 
 g
-
+ggplot2::ggsave('cell_enrichments.png')
 ```
 
 AD genetics summary
