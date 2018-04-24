@@ -18,6 +18,7 @@ collateEnrichmentSets = function(){
   adList <- GeneSets$Alzheimers$`AD:GeneticLoci`
   adList <- c(adList,'HLA-DRB5','HLA-DRB1')
   adList <- adList[-which(adList=='HLA-DRB5-DRB1')]
+  adList <- adList[-which(adList=='PSEN1' | adList =='PSEN2' | adList =='APP' | adList == 'P2K2B')]
   adList <- list(igap = adList)
   adList$dbgap <- dbgap$`Alzheimer Disease`
   adList$kegg <- kegg$`Alzheimer's disease_Homo sapiens_hsa05010`

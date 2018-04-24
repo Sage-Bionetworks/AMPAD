@@ -86,7 +86,7 @@ g <- g + ggplot2::labs(y = 'Cell Type Signature',
                        x = 'AD Endophenotype')
 
 g
-ggplot2::ggsave('cell_enrichments.png')
+#ggplot2::ggsave('cell_enrichments.png')
 ```
 
 AD genetics summary
@@ -113,6 +113,68 @@ g <- g + ggplot2::labs(y = 'AD Signature',
 g
 
 ggplot2::ggsave('ad_signature_enrichments.png')
+```
+
+meta analysis enrichments
+```{r}
+dummyDf <- dplyr::filter(targetedEnrichment$degMeta,adj.pval<=0.05)
+dummyDf <- dplyr::filter(dummyDf,category == 'ad.control.FEMALE.fixed.DOWN' |
+                           category == 'ad.control.FEMALE.fixed.UP' | 
+                           category == 'ad.control.MALE.fixed.DOWN' | 
+                           category == 'ad.control.MALE.fixed.UP')
+dummyDf$adj.pval[dummyDf$adj.pval==0] = 10^-300
+dummyDf <- dplyr::left_join(dummyDf,modMeta)
+dummyDf$ModuleBrainRegion <- factor(dummyDf$ModuleBrainRegion,levels = unique(dummyDf$ModuleBrainRegion))
+
+g <- ggplot2::ggplot(dummyDf,
+                     ggplot2::aes(x = Module,
+                                  y = category,
+                                  size = fisherOR,
+                                  color = -log10(adj.pval)))
+g <- g+ggplot2::geom_count()
+#g <- g + ggplot2::scale_y_log10()
+g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1), breaks = c(1.5, 3,8,20,50,110,300),trans='log')
+g <- g + ggplot2::coord_flip()
+g <- g + ggplot2::ggtitle('Enrichment for AD Signatures')
+g <- g + ggplot2::labs(y = 'AD Signature',
+                       x = 'AD Endophenotype')
+g
+
+#ggplot2::ggsave('ad_signature_enrichments.png')
+```
+
+
+```{r}
+dummyDf <- dplyr::filter(targetedEnrichment$degMeta,adj.pval<=0.05)
+dummyDf <- dplyr::filter(dummyDf,category == 'ad.control.FEMALE.random.DOWN' |
+                           category == 'ad.control.FEMALE.random.UP' | 
+                           category == 'ad.control.MALE.random.DOWN' | 
+                           category == 'ad.control.MALE.random.UP')
+dummyDf$adj.pval[dummyDf$adj.pval==0] = 10^-300
+dummyDf$category <- gsub('ad\\.control\\.FEMALE\\.random\\.DOWN','Female, Down',dummyDf$category)
+dummyDf$category <- gsub('ad\\.control\\.MALE\\.random\\.DOWN','Male, Down',dummyDf$category)
+dummyDf$category <- gsub('ad\\.control\\.FEMALE\\.random\\.UP','Female, Up',dummyDf$category)
+dummyDf$category <- gsub('ad\\.control\\.MALE\\.random\\.UP','Male, Up',dummyDf$category)
+dummyDf <- dplyr::left_join(dummyDf,modMeta)
+dummyDf$ModuleBrainRegion <- factor(dummyDf$ModuleBrainRegion,levels = unique(dummyDf$ModuleBrainRegion))
+
+g <- ggplot2::ggplot(dummyDf,
+                     ggplot2::aes(x = Module,
+                                  y = category,
+                                  size = fisherOR,
+                                  color = -log10(adj.pval)))
+g <- g+ggplot2::geom_count()
+#g <- g + ggplot2::scale_y_log10()
+#g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1), breaks = c(1.5, 3,8,20,50,110,300),trans='log')
+g <- g + ggplot2::coord_flip()
+g <- g + ggplot2::ggtitle('Enrichment for AD DEG Signatures')
+g <- g + ggplot2::labs(y = 'DEG Sex Specific Meta Analysis',
+                       x = 'AD Endophenotype')
+g
+
+#ggplot2::ggsave('ad_signature_enrichments.png')
 ```
 
 ```{r}
