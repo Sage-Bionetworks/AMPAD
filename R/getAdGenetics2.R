@@ -1,4 +1,4 @@
-getAdGenetics <- function(synId='syn10338156'){
+getAdGenetics2 <- function(synId='syn10338156'){
   moduleSet <- synapseClient::synTableQuery(paste0("SELECT DISTINCT ModuleNameFull, Module, method, brainRegion from ",synId))@values
   colnames(moduleSet)[c(3:4)] <- c('ModuleMethod','ModuleBrainRegion')
 
@@ -48,7 +48,8 @@ getAdGenetics <- function(synId='syn10338156'){
   adList <- GeneSets$Alzheimers$`AD:GeneticLoci`
   adList <- c(adList,'HLA-DRB5','HLA-DRB1')
   adList <- adList[-which(adList=='HLA-DRB5-DRB1')]
-    adList <- adList[-which(adList=='PSEN1' | adList =='PSEN2' | adList =='APP' | adList == 'P2K2B')]
+  adList <- adList[-which(adList=='PSEN1' | adList =='PSEN2' | adList =='APP' | adList == 'P2K2B')]
+
   adList <- list(igap = adList)
   adList$dbgap <- dbgap$`Alzheimer Disease`
   adList$kegg <- kegg$`Alzheimer's disease_Homo sapiens_hsa05010`
@@ -97,5 +98,5 @@ getAdGenetics <- function(synId='syn10338156'){
   moduleSummary <- rbind(moduleSummary,adTestSummary)
   moduleSummary$EvidenceClass <- 'genetics'
 
-  return(moduleSummary)
+  return(list(moduleSummary,adList))
 }
