@@ -110,7 +110,7 @@ improvedAdRelevancePlot <- function(){
                              GeneSetName,
                              GeneSetAssociationStatistic,
                              GeneSetEffect) %>%
-    dplyr::mutate(category = rep('AD Endophenotypes (Modules)',nrow(adGeneticsSummaryTest)))
+    dplyr::mutate(category = rep('Final AD Modules',nrow(adGeneticsSummaryTest)))
 
 
   # metaAnalysisEnrichment <- dplyr::left_join(foobarY2,foobarY4)
@@ -183,10 +183,10 @@ improvedAdRelevancePlot <- function(){
   g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
 
   #g <- g + ggplot2::coord_flip()
-  g <- g + ggplot2::ggtitle('Enrichment for AD signatures')
+  #g <- g + ggplot2::ggtitle('Enrichment for AD signatures')
   g <- g + ggplot2::labs(x = 'System Biology Derived AD Geneset',
                          y = 'Percent pairwise associations significant')
   g
-  ggplot2::ggsave('sig_enrichments_figure.png')
+  ggplot2::ggsave('figure1.tiff',device='tiff',units='mm',width=114,height=85,scale=1.5)
 
 }
