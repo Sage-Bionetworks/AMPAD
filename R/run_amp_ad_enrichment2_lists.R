@@ -1,7 +1,8 @@
-run_amp_ad_enrichment2 <- function(geneSetList,
+run_amp_ad_enrichment2_lists <- function(geneSetList,
                                   geneSetName,
+                                  refGeneSetList,
                                   hgnc = TRUE,
-                                  manifestId = "syn10338156"){
+                                  testhgnc=FALSE){
   #INPUT:
   #geneSetList - a list of genes in hgnc or ensembl format
   #geneSetName - name of geneset (should be a single character string)
@@ -11,36 +12,27 @@ run_amp_ad_enrichment2 <- function(geneSetList,
 
   #OUTPUT:
   #data frame with module name, gene set name, p-value, and odds ratio of enrichment, intersections, and gene set sizes
-  library(dplyr)
-  cat('logging into Synapse...\n')
-  synapseClient::synapseLogin()
-  #grab module definitions
-  cat('pulling modules...\n')
-  allMods <- synapseClient::synTableQuery(paste0("SELECT * FROM ",manifestId))@values
+  straightHgncConversion <- function(x){
+    y<-utilityFunctions::convertHgncToEnsembl(x)
+    return(unique(y$ensembl_gene_id))
+  }
 
-  listify <- function(x,y,z){
-    ###fxn will listify a long form table
-    ###x: unique key
-    ###y: values
-    ###z: keys
-    return(unique(y[which(z==x)]))
+  straightEnsemblConversion <- function(x){
+    y<- utilityFunctions::convertEnsemblToHgnc(x)
+    return(unique(y$external_gene_name))
   }
-  cat('building module gene sets...\n')
-  if(hgnc){
-    modulesLargeList <- lapply(unique(allMods$ModuleNameFull),
-                               listify,
-                               allMods$external_gene_name,
-                               allMods$ModuleNameFull)
-  }else{
-    modulesLargeList <- lapply(unique(allMods$ModuleNameFull),
-                               listify,
-                               allMods$GeneID,
-                               allMods$ModuleNameFull)
+
+  if((hgnc!=testhgnc) & (!testhgnc)){
+    geneSetList <- lapply(geneSetList,straightEnsemblConversion)
+  }else if((hgnc!=testhgnc) & (testhgnc)){
+    geneSetList <- lapply(geneSetList,straightHgncConversion)
   }
-  names(modulesLargeList) <- unique(allMods$ModuleNameFull)
+
+
+  library(dplyr)
   cat('removing genes that are not relevant from reference set...\n')
   #get unique gene keys,drop categories in both cases that are 0 in size
-  uniqueModuleList <- modulesLargeList %>%
+  uniqueModuleList <- refGeneSetList %>%
     unlist %>%
     unique
 
@@ -54,7 +46,7 @@ run_amp_ad_enrichment2 <- function(geneSetList,
 
   res <- list()
   res$fisher <- utilityFunctions::outerSapplyParallel(utilityFunctions::fisherWrapper,
-                                                      modulesLargeList,
+                                                      refGeneSetList,
                                                       geneSetList,
                                                       refGeneSet)
   #pvalues are odd rows, odds ratios are even rows
@@ -68,7 +60,7 @@ run_amp_ad_enrichment2 <- function(geneSetList,
   }
 
   res$inter <- utilityFunctions::outerSapplyParallel(sizeOfInter,
-                                                     modulesLargeList,
+                                                     refGeneSetList,
                                                      geneSetList)
 
 
@@ -102,8 +94,8 @@ run_amp_ad_enrichment2 <- function(geneSetList,
 
 
   ###get sizes
-  aggModSize <- data.frame(ModuleNameFull = names(modulesLargeList),
-                           mod_size = sapply(modulesLargeList,length),
+  aggModSize <- data.frame(ModuleNameFull = names(refGeneSetList),
+                           mod_size = sapply(refGeneSetList,length),
                            stringsAsFactors = F)
   categorySize <- data.frame(category = make.names(names(geneSetList)),
                              category_size = sapply(geneSetList,length),

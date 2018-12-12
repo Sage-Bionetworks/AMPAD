@@ -14,30 +14,33 @@ For each of the three build the data frame of the respective Analyses
 
 ```{r,include=FALSE}
 targetedEnrichment <- list()
-targetedEnrichment$ad <- AMPAD::run_amp_ad_enrichment(targetedGeneSets$ad,
+targetedEnrichment$ad <- AMPAD::run_amp_ad_enrichment2(targetedGeneSets$ad,
                                                       'AD',
                                                       hgnc = TRUE,
                                                       manifestId = 'syn11932957')
 
-targetedEnrichment$cell <- AMPAD::run_amp_ad_enrichment(targetedGeneSets$cell,
+targetedEnrichment$cell <- AMPAD::run_amp_ad_enrichment2(targetedGeneSets$cell,
                                                         'Cell',
                                                         hgnc= TRUE,
                                                         manifestId = 'syn11932957')
 
-targetedEnrichment$deg <- AMPAD::run_amp_ad_enrichment(targetedGeneSets$deg,
+targetedEnrichment$deg <- AMPAD::run_amp_ad_enrichment2(targetedGeneSets$deg,
                                                        'DEG',
                                                        hgnc=FALSE,
                                                        manifestId = 'syn11932957')
 
-targetedEnrichment$degMeta <- AMPAD::run_amp_ad_enrichment(targetedGeneSets$degMeta,
+targetedEnrichment$degMeta <- AMPAD::run_amp_ad_enrichment2(targetedGeneSets$degMeta,
                                                            'DEGmeta',
                                                            hgnc=FALSE,
                                                            manifestId = 'syn11932957')
 
-targetedEnrichment$targetPathways <- AMPAD::run_amp_ad_enrichment(targetedGeneSets$targetedPathways,
+targetedEnrichment$targetPathways <- AMPAD::run_amp_ad_enrichment2(targetedGeneSets$targetedPathways,
                                                            'TargetedPathways',
                                                            hgnc=FALSE,
                                                            manifestId = 'syn11932957')
+
+
+
 
 ```
 
@@ -181,16 +184,29 @@ dummyDf <- dplyr::filter(dummyDf,category == 'Nominated_targets' |
                            category == 'Mayo_comprehensive' | 
                            category == 'Emory' | 
                            category == 'Columbia_Broad_Rush_m109')
+dummyDf <- dplyr::select(dummyDf,
+                         Module,
+                         category,
+                         mod_size,
+                         category_size,
+                         nInter,
+                         adj.pval,
+                         fisherOR)
 
-aggMods <- rSynapseUtilities::loadFullTable('')
+colnames(dummyDf) <- c('Module Name',
+                       'AMP-AD Gene Set',
+                       'Module Size',
+                       'AMP-AD Gene Set Size',
+                       'Size of Intersection',
+                       'Adjusted P-value',
+                       'FET Odds Ratio')
+write.csv(dummyDf,file='amp-ad_overlap_stats.csv',quote=F,row.names=F)
 
 ```
 
 
 
 AD genetics summary
-
-
 ```{r}
 dummyDf <- targetedEnrichment$ad
 dummyDf$fisherOR[dummyDf$adj.pval>=0.05] <- NA
