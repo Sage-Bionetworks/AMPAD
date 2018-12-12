@@ -36,17 +36,64 @@ collateEnrichmentSets = function(){
 
   adList$genecards <- genecards$`Gene Symbol`
 
-  enrichmentSets$ad <- adList
+  #load mckenzie oligo data
+
+  mckenzie <- data.table::fread('zhang_modules.csv',data.table = F)
+  adList$MSSM <- dplyr::filter(mckenzie,Module == 'Red' | Module == 'List green' | Module == 'Green')$Gene_Symbol
+
+  #load allen oligo data
+  #allen <- data.table::fread('allen2018.csv',data.table=F)
+  #adList$`AMP-AD Allen et al. 2018 AD+PSP TCX40.CS` <- dplyr::filter(allen,module=='TCX40')$gene_symbol
+
+  #adList$`AMP-AD Allen et al. 2018 AD+PSP TCX10.CS` <- dplyr::filter(allen,module=='TCX10')$gene_symbol
+
+  allen_simple <- data.table::fread('tcx_simple_oligo.csv',data.table=F)
+  allen_comprehensive <- data.table::fread('tcx_comprehensive_oligo.csv',data.table=F)
+
+  allen_simple$module <- paste0(allen_simple$module,
+                                '_simple')
+  allen_comprehensive$module <- paste0(allen_comprehensive$module,
+                                       '_comprehensive')
+  allen_list_s <- sapply(unique(allen_simple$module),
+                         utilityFunctions::listify,
+                         allen_simple$gene_symbol,
+                         allen_simple$module)
+  names(allen_list_s) <- unique(allen_simple$module)
+  adList$Mayo_simple <- unlist(allen_list_s)
+
+
+  allen_list_c <- sapply(unique(allen_comprehensive$module),
+                         utilityFunctions::listify,
+                         allen_comprehensive$gene_symbol,
+                         allen_comprehensive$module)
+
+  names(allen_list_c) <- unique(allen_comprehensive$module)
+  adList$Mayo_comprehensive <- unlist(allen_list_c)
+
+  #load amp-ad targets
+  adtargetsObj<-synapseClient::synGet('syn12540368',version = 17)
+
+  adtargets <- data.table::fread(adtargetsObj@filePath,data.table=F)
+  adList$`Nominated_targets` <- adtargets$hgnc_symbol
+
+  #load module109
+  adList$`Columbia_Broad_Rush_m109` <- unique(synapseClient::synTableQuery('select * from syn5321231 where speakeasyModule = 109')@values$hgncName)
+
+
+  #load johnson 2018
+  johnson <- data.table::fread('johnson.csv',data.table=F)
+  adList$Emory <- dplyr::filter(johnson,Module == WGCNA::labels2colors(17) | Module == WGCNA::labels2colors(18) | Module == WGCNA::labels2colors(10) | Module == WGCNA::labels2colors(15) | Module == WGCNA::labels2colors(29) | Module == WGCNA::labels2colors(40))$geneName
+  enrichmentSets$ad <- lapply(adList,unique)
 
   #pull degs
-  enrichmentSets$deg <- AMPAD::makeDEGAD()
+  enrichmentSets$deg <- lapply(AMPAD::makeDEGAD(),unique)
   #pull cell types
-  enrichmentSets$cell <- GeneSets$Cell_Markers
+  enrichmentSets$cell <- lapply(GeneSets$Cell_Markers,unique)
 
   fob1 <- synapseClient::synGet('syn11914811')
   load(fob1@filePath)
-  enrichmentSets$degMeta <- all.gs
+  enrichmentSets$degMeta <- lapply(all.gs,unique)
 
-  enrichmentSets$targetedPathways <- AMPAD::getCuratedPathways()
+  enrichmentSets$targetedPathways <- lapply(AMPAD::getCuratedPathways(),unique)
   return(enrichmentSets)
 }

@@ -3,13 +3,6 @@ title: "AMP-AD Manuscript Analyses"
 output: html_notebook
 ---
 
-Create the qq plot.
-```{r}
-
-AMPAD::qqplotFigure()
-
-```
-
 Pull targeted genesets
 
 ```{r,include =F}
@@ -79,6 +72,48 @@ dummyDf$category <- factor(dummyDf$category,levels = rev(c('Astrocyte',
                                                        'NewOligos',
                                                        'OPC')))
 #dummyDf$ModuleBrainRegion <- factor(dummyDf$ModuleBrainRegion,levels = unique(dummyDf$ModuleBrainRegion))
+customDf <- data.frame(moduleName=c('TCXblue',
+                                      'IFGyellow',
+                                      'PHGyellow',
+                                      'DLPFCblue',
+                                      'CBEturquoise',
+                                      'STGblue',
+                                      'PHGturquoise',
+                                      'IFGturquoise',
+                                      'TCXturquoise',
+                                      'FPturquoise',
+                                      'IFGbrown',
+                                      'STGbrown',
+                                      'DLPFCyellow',
+                                      'TCXgreen',
+                                      'FPyellow',
+                                      'CBEyellow',
+                                      'PHGbrown',
+                                      'DLPFCbrown',
+                                      'STGyellow',
+                                      'PHGgreen',
+                                      'CBEbrown',
+                                      'TCXyellow',
+                                      'IFGblue',
+                                      'FPblue',
+                                      'FPbrown',
+                                      'CBEblue',
+                                      'DLPFCturquoise',
+                                      'TCXbrown',
+                                      'STGturquoise',
+                                      'PHGblue'),
+                         Cluster= c(rep('Astrocytic',3),
+                                       rep('Microglial',7),
+                                       rep('Neuronal',7),
+                                       rep('Oligodendroglial',7),
+                                       rep('Proteostasis',6)),
+                         stringsAsFactors=F)
+ dummyDf <- dplyr::left_join(dummyDf,customDf,by=c('Module'='moduleName'))
+ dummyDf$Cluster <- factor(dummyDf$Cluster,levels = (c('Astrocytic',
+                                                      'Microglial',
+                                                      'Neuronal',
+                                                      'Oligodendroglial',
+                                                      'Proteostasis')))
 dummyDf$Module <- factor(dummyDf$Module,levels = (c('TCXblue',
                                                    'IFGyellow',
                                                    'PHGyellow',
@@ -109,26 +144,49 @@ dummyDf$Module <- factor(dummyDf$Module,levels = (c('TCXblue',
                                                    'TCXbrown',
                                                    'STGturquoise',
                                                    'PHGblue')))
+
+ 
+
 g <- ggplot2::ggplot(dummyDf,
                      ggplot2::aes(x = Module,
                                   y = category,
                                   size = fisherOR,
-                                  color = -log10(adj.pval)))
+                                  color = Cluster))
 g <- g + ggplot2::geom_count()
 #g <- g + ggplot2::scale_y_log10()
 
-#g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
-g <- g + ggplot2::theme(axis.text.x=ggplot2::element_blank(),
-        axis.ticks.x=ggplot2::element_blank())
-g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1), breaks = c(1.5, 3,8,20,50,110),trans='log')
+g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+#g <- g + ggplot2::theme(axis.text.x=ggplot2::element_blank(),
+#        axis.ticks.x=ggplot2::element_blank())
+#g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1), breaks = c(1.5, 3,8,20,50,110),trans='log')
 #g <- g + ggplot2::coord_flip()
-g <- g + ggplot2::ggtitle('Enrichment for Cell Type Specific Signatures')
+#g <- g + ggplot2::ggtitle('Enrichment for Cell Type Specific Signatures')
 g <- g + ggplot2::labs(y = 'Cell Type Signature',
-                       x = 'AD Endophenotype')
+                       x = 'AD Coexpression Module')
 
 g
+ggplot2::ggsave('figure2B.tiff',device='tiff',units='mm',width=85,height=85,scale=1.8)
 #ggplot2::ggsave('cell_enrichments.png')
 ```
+
+overlap table with amp-ad related gene sets
+```{r}
+dummyDf <- targetedEnrichment$ad
+dummyDf$fisherOR[dummyDf$adj.pval>=0.05] <- NA
+dummyDf <- dplyr::left_join(dummyDf,modMeta)
+dummyDf <- dplyr::filter(dummyDf,adj.pval<=0.05)
+dummyDf <- dplyr::filter(dummyDf,category == 'Nominated_targets' |
+                           category == 'MSSM' | 
+                           category == 'Mayo_simple' | 
+                           category == 'Mayo_comprehensive' | 
+                           category == 'Emory' | 
+                           category == 'Columbia_Broad_Rush_m109')
+
+aggMods <- rSynapseUtilities::loadFullTable('')
+
+```
+
+
 
 AD genetics summary
 
@@ -150,7 +208,21 @@ dummyDf$category <- factor(dummyDf$category,
                                        'wikipathwaysHuman',
                                        'pantherAmyloid',
                                        'kegg',                                       
-                                       'omim')))
+                                       'omim',
+                                       'Nominated_targets',
+                                       'MSSM',
+                                       'Mayo_simple',
+                                       'Mayo_comprehensive',
+                                       'Emory',
+                                       'Columbia_Broad_Rush_m109')))
+
+ dummyDf <- dplyr::left_join(dummyDf,customDf,by=c('Module'='moduleName'))
+dummyDf$Cluster <- factor(dummyDf$Cluster,levels = (c('Astrocytic',
+                                                      'Microglial',
+                                                      'Neuronal',
+                                                      'Oligodendroglial',
+                                                      'Proteostasis')))
+
 dummyDf$Module <- factor(dummyDf$Module,levels = (c('TCXblue',
                                                    'IFGyellow',
                                                    'PHGyellow',
@@ -183,54 +255,141 @@ dummyDf$Module <- factor(dummyDf$Module,levels = (c('TCXblue',
                                                    'PHGblue')))
 
 
+# g <- ggplot2::ggplot(dummyDf,
+#                      ggplot2::aes(x = Module,
+#                                   y = category,
+#                                   size = fisherOR,
+#                                   color = -log10(adj.pval)))
+# g <- g+ggplot2::geom_count()
+# #g <- g + ggplot2::scale_y_log10()
+# #g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+# g <- g + ggplot2::theme(axis.text.x=ggplot2::element_blank(),
+#         axis.ticks.x=ggplot2::element_blank())
+# g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1), breaks = c(1.4,6,12,18,25))
+# #g <- g + ggplot2::coord_flip()
+# g <- g + ggplot2::ggtitle('Enrichment for AD Signatures')
+
 g <- ggplot2::ggplot(dummyDf,
                      ggplot2::aes(x = Module,
                                   y = category,
                                   size = fisherOR,
-                                  color = -log10(adj.pval)))
-g <- g+ggplot2::geom_count()
-#g <- g + ggplot2::scale_y_log10()
-#g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
-g <- g + ggplot2::theme(axis.text.x=ggplot2::element_blank(),
-        axis.ticks.x=ggplot2::element_blank())
-g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1), breaks = c(1.4,6,12,18,25))
-#g <- g + ggplot2::coord_flip()
-g <- g + ggplot2::ggtitle('Enrichment for AD Signatures')
-g <- g + ggplot2::labs(y = 'AD Signature',
-                       x = 'AD Endophenotype')
-g
+                                  color = Cluster))
+g <- g + ggplot2::geom_count()
 
+g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+
+g <- g + ggplot2::labs(y = 'AD Signature',
+                       x = 'AD Coexpression Module')
+g
+ggplot2::ggsave('figure2C.tiff',device='tiff',units='mm',width=85,height=85,scale=1.8)
 #ggplot2::ggsave('ad_signature_enrichments.png')
 ```
 
-meta analysis enrichments
+
+
 ```{r}
-dummyDf <- dplyr::filter(targetedEnrichment$degMeta,adj.pval<=0.05)
-dummyDf <- dplyr::filter(dummyDf,category == 'ad.control.FEMALE.fixed.DOWN' |
-                           category == 'ad.control.FEMALE.fixed.UP' | 
-                           category == 'ad.control.MALE.fixed.DOWN' | 
-                           category == 'ad.control.MALE.fixed.UP')
-dummyDf$adj.pval[dummyDf$adj.pval==0] = 10^-300
+dummyDf <- targetedEnrichment$ad
+dummyDf$fisherOR[dummyDf$adj.pval>=0.05] <- NA
 dummyDf <- dplyr::left_join(dummyDf,modMeta)
-dummyDf$ModuleBrainRegion <- factor(dummyDf$ModuleBrainRegion,levels = unique(dummyDf$ModuleBrainRegion))
+dummyDf<- dplyr::filter(dummyDf,category == 'AMP.AD.Nominated.Targets' |
+                                    category == 'AMP.AD.McKenzie.et.al..2017.Red' |
+                                    category == 'AMP.AD.McKenzie.et.al..2017.Light.green' |
+                                    category == 'AMP.AD.McKenzie.et.al..2017.Green' |
+                                    category == 'AMP.AD.Allen.et.al..2018.AD.PSP.TCX40.CS' |
+                                    category == 'AMP.AD.Allen.et.al..2018.AD.PSP.TCX10.CS' | 
+                                    category == 'AMP.AD.Johnson.et.al..2018.RNA.Binding' | 
+                                    category == 'AMP.AD.Mostafavi.et.al..2018.m109')
+dummyDf$category[dummyDf$category=='AMP.AD.Nominated.Targets'] = 'Nominated\nTargets'
+dummyDf$category[dummyDf$category=='AMP.AD.McKenzie.et.al..2017.Red'] = 'MSSM Oligo\nRed'
+dummyDf$category[dummyDf$category=='AMP.AD.McKenzie.et.al..2017.Light.green'] = 'MSSM Oligo\nLight green'
+dummyDf$category[dummyDf$category=='AMP.AD.McKenzie.et.al..2017.Green'] = 'MSSM Oligo\nGreen'
+dummyDf$category[dummyDf$category=='AMP.AD.Allen.et.al..2018.AD.PSP.TCX40.CS'] = 'Mayo Oligo\nAD.PSP.TCX40.CS'
+dummyDf$category[dummyDf$category=='AMP.AD.Allen.et.al..2018.AD.PSP.TCX10.CS'] = 'Mayo Oligo\nAD.PSP.TCX10.CS'
+dummyDf$category[dummyDf$category=='AMP.AD.Johnson.et.al..2018.RNA.Binding'] = 'Emory\nRNA binding'
+dummyDf$category[dummyDf$category=='AMP.AD.Mostafavi.et.al..2018.m109'] = 'Rush m109'
+
+
+
+#dummyDf$ModuleBrainRegion <- factor(dummyDf$ModuleBrainRegion,levels = unique(dummyDf$ModuleBrainRegion))
+dummyDf$category <- factor(dummyDf$category,
+                           levels = (c('Nominated\nTargets',
+                                       'MSSM Oligo\nRed',
+                                       'MSSM Oligo\nLight green',
+                                       'MSSM Oligo\nGreen',
+                                       'Mayo Oligo\nAD.PSP.TCX40.CS',
+                                       'Mayo Oligo\nAD.PSP.TCX10.CS',
+                                       'Emory\nRNA binding',
+                                       'Rush m109')))
+
+ dummyDf <- dplyr::left_join(dummyDf,customDf,by=c('Module'='moduleName'))
+dummyDf$Cluster <- factor(dummyDf$Cluster,levels = (c('Astrocytic',
+                                                      'Microglial',
+                                                      'Neuronal',
+                                                      'Oligodendroglial',
+                                                      'Proteostasis')))
+
+dummyDf$Module <- factor(dummyDf$Module,levels = rev(c('TCXblue',
+                                                   'IFGyellow',
+                                                   'PHGyellow',
+                                                   'DLPFCblue',
+                                                   'CBEturquoise',
+                                                   'STGblue',
+                                                   'PHGturquoise',
+                                                   'IFGturquoise',
+                                                   'TCXturquoise',
+                                                   'FPturquoise',
+                                                   'IFGbrown',
+                                                   'STGbrown',
+                                                   'DLPFCyellow',
+                                                   'TCXgreen',
+                                                   'FPyellow',
+                                                   'CBEyellow',
+                                                   'PHGbrown',
+                                                   'DLPFCbrown',
+                                                   'STGyellow',
+                                                   'PHGgreen',
+                                                   'CBEbrown',
+                                                   'TCXyellow',
+                                                   'IFGblue',
+                                                   'FPblue',
+                                                   'FPbrown',
+                                                   'CBEblue',
+                                                   'DLPFCturquoise',
+                                                   'TCXbrown',
+                                                   'STGturquoise',
+                                                   'PHGblue')))
+
+
+# g <- ggplot2::ggplot(dummyDf,
+#                      ggplot2::aes(x = Module,
+#                                   y = category,
+#                                   size = fisherOR,
+#                                   color = -log10(adj.pval)))
+# g <- g+ggplot2::geom_count()
+# #g <- g + ggplot2::scale_y_log10()
+# #g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+# g <- g + ggplot2::theme(axis.text.x=ggplot2::element_blank(),
+#         axis.ticks.x=ggplot2::element_blank())
+# g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1), breaks = c(1.4,6,12,18,25))
+# #g <- g + ggplot2::coord_flip()
+# g <- g + ggplot2::ggtitle('Enrichment for AD Signatures')
 
 g <- ggplot2::ggplot(dummyDf,
                      ggplot2::aes(x = Module,
                                   y = category,
                                   size = fisherOR,
-                                  color = -log10(adj.pval)))
-g <- g+ggplot2::geom_count()
-#g <- g + ggplot2::scale_y_log10()
-#g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+                                  color = Cluster))
+g <- g + ggplot2::geom_count()
 
-g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1), breaks = c(1.5, 3,8,20,50,110,300),trans='log')
+g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+
 g <- g + ggplot2::coord_flip()
-g <- g + ggplot2::ggtitle('Enrichment for AD Signatures')
-g <- g + ggplot2::labs(y = 'AD Signature',
-                       x = 'AD Endophenotype')
-g
 
-#ggplot2::ggsave('ad_signature_enrichments.png')
+g <- g + ggplot2::labs(y = 'AD Signature',
+                       x = 'AD Coexpression Module')
+g
+#ggplot2::ggsave('figure2C.tiff',device='tiff',units='mm',width=85,height=85,scale=1.8)
+ggplot2::ggsave('amp_ad_new_modules.png',units='in',width=4.91,height=4.8,scale=1.4)
 ```
 
 
@@ -247,6 +406,12 @@ dummyDf$category <- gsub('ad\\.control\\.FEMALE\\.random\\.UP','Female, Up',dumm
 dummyDf$category <- gsub('ad\\.control\\.MALE\\.random\\.UP','Male, Up',dummyDf$category)
 dummyDf <- dplyr::left_join(dummyDf,modMeta)
 #dummyDf$ModuleBrainRegion <- factor(dummyDf$ModuleBrainRegion,levels = unique(dummyDf$ModuleBrainRegion))
+ dummyDf <- dplyr::left_join(dummyDf,customDf,by=c('Module'='moduleName'))
+dummyDf$Cluster <- factor(dummyDf$Cluster,levels = (c('Astrocytic',
+                                                      'Microglial',
+                                                      'Neuronal',
+                                                      'Oligodendroglial',
+                                                      'Proteostasis')))
 dummyDf$category <- factor(dummyDf$category,rev(c('Female, Up',
                                                   'Male, Up',
                                                   'Female, Down',
@@ -282,23 +447,33 @@ dummyDf$Module <- factor(dummyDf$Module,levels = (c('TCXblue',
                                                    'STGturquoise',
                                                    'PHGblue')))
 
+# g <- ggplot2::ggplot(dummyDf,
+#                      ggplot2::aes(x = Module,
+#                                   y = category,
+#                                   size = fisherOR,
+#                                   color = -log10(adj.pval)))
+# g <- g+ggplot2::geom_count()
+# #g <- g + ggplot2::scale_y_log10()
+# #g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+# g <- g + ggplot2::theme(axis.text.x=ggplot2::element_blank(),
+#         axis.ticks.x=ggplot2::element_blank())
+# g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1), breaks = c(1.5, 3,8,20,50,110,300),trans='log')
+# #g <- g + ggplot2::coord_flip()
+# g <- g + ggplot2::ggtitle('Enrichment for AD DEG Signatures')
+
 g <- ggplot2::ggplot(dummyDf,
                      ggplot2::aes(x = Module,
                                   y = category,
                                   size = fisherOR,
-                                  color = -log10(adj.pval)))
-g <- g+ggplot2::geom_count()
-#g <- g + ggplot2::scale_y_log10()
-#g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
-g <- g + ggplot2::theme(axis.text.x=ggplot2::element_blank(),
-        axis.ticks.x=ggplot2::element_blank())
-g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1), breaks = c(1.5, 3,8,20,50,110,300),trans='log')
-#g <- g + ggplot2::coord_flip()
-g <- g + ggplot2::ggtitle('Enrichment for AD DEG Signatures')
-g <- g + ggplot2::labs(y = 'DEG Sex Specific Meta Analysis',
-                       x = 'AD Endophenotype')
-g
+                                  color = Cluster))
+g <- g + ggplot2::geom_count()
 
+g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+
+g <- g + ggplot2::labs(y = 'DEG Sex Specific Meta Analysis',
+                       x = 'AD Coexpression Module')
+g
+ggplot2::ggsave('figure2D.tiff',device='tiff',units='mm',width=85,height=85,scale=1.8)
 #ggplot2::ggsave('deg_signature_enrichments.png')
 ```
 
@@ -427,7 +602,7 @@ g
 Overlap plot
 
 ```{r}
-AMPAD::pairwiseMatrixOfEnrichments('syn11932737')
+AMPAD::pairwiseMatrixOfEnrichments('syn11932957')
 
 ```
 Make PC statistics
