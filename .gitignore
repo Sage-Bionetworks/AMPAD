@@ -46,3 +46,9 @@ pairwise_test.tiff
 tcx_comprehensive_oligo.csv
 tcx_simple_oligo.csv
 amp-ad_overlap_stats.csv
+adDown.csv
+adDownFemale.csv
+adDownMale.csv
+adUpFemale.csv
+adUpMale.csv
+adup.csv
