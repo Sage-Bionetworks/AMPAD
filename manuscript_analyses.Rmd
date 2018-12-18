@@ -3,6 +3,12 @@ title: "AMP-AD Manuscript Analyses"
 output: html_notebook
 ---
 
+
+make pairwise enrichment matrix
+
+```{r}
+ AMPAD::pairwiseMatrixOfEnrichments('syn11932957')
+```
 Pull targeted genesets
 
 ```{r,include =F}

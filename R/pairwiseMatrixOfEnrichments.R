@@ -40,11 +40,11 @@ pairwiseMatrixOfEnrichments = function(synId){
                                       'TCXbrown',
                                       'STGturquoise',
                                       'PHGblue'),
-                         Cluster= c(rep('Astrocytic',3),
-                                       rep('Microglial',7),
-                                       rep('Neuronal',7),
-                                       rep('Oligodendroglial',7),
-                                       rep('Proteostasis',6)),
+                         Cluster= c(rep('Consensus Cluster A',3),
+                                       rep('Consensus Cluster B',7),
+                                       rep('Consensus Cluster C',7),
+                                       rep('Consensus Cluster D',7),
+                                       rep('Consensus Cluster E',6)),
                          stringsAsFactors=F)
   rownames(customDf) <- customDf$moduleName
   customDf <- dplyr::select(customDf,Cluster)
@@ -52,11 +52,11 @@ pairwiseMatrixOfEnrichments = function(synId){
   #red,yellow,green,blue,purple
   mats$pval <- mats$pval + 1e-300
   tiff(filename='figure2A.tiff',height=85,width=85,units='mm',res=300)
-  ann_colors<-list(Cluster=c(Astrocytic='#F8766D',
-                 Microglial='#A3A500',
-                 Neuronal='#00BF7D',
-                 Oligodendroglial='#00B0F6',
-                 Proteostasis='#E76BF3'))
+  ann_colors<-list(Cluster=c(`Consensus Cluster A`='#F8766D',
+                 `Consensus Cluster B`='#A3A500',
+                 `Consensus Cluster C`='#00BF7D',
+                 `Consensus Cluster D`='#00B0F6',
+                 `Consensus Cluster E`='#E76BF3'))
   pheatmap::pheatmap(-log10(mats$pval),
                      show_colnames = F,
                      border_color = NA,
