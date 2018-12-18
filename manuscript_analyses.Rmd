@@ -118,18 +118,18 @@ customDf <- data.frame(moduleName=c('TCXblue',
                                       'TCXbrown',
                                       'STGturquoise',
                                       'PHGblue'),
-                         Cluster= c(rep('Astrocytic',3),
-                                       rep('Microglial',7),
-                                       rep('Neuronal',7),
-                                       rep('Oligodendroglial',7),
-                                       rep('Proteostasis',6)),
+                         Cluster= c(rep('Consensus Cluster A',3),
+                                       rep('Consensus Cluster B',7),
+                                       rep('Consensus Cluster C',7),
+                                       rep('Consensus Cluster D',7),
+                                       rep('Consensus Cluster E',6)),
                          stringsAsFactors=F)
  dummyDf <- dplyr::left_join(dummyDf,customDf,by=c('Module'='moduleName'))
- dummyDf$Cluster <- factor(dummyDf$Cluster,levels = (c('Astrocytic',
-                                                      'Microglial',
-                                                      'Neuronal',
-                                                      'Oligodendroglial',
-                                                      'Proteostasis')))
+ dummyDf$Cluster <- factor(dummyDf$Cluster,levels = (c('Consensus Cluster A',
+                                                      'Consensus Cluster B',
+                                                      'Consensus Cluster C',
+                                                      'Consensus Cluster D',
+                                                      'Consensus Cluster E')))
 dummyDf$Module <- factor(dummyDf$Module,levels = (c('TCXblue',
                                                    'IFGyellow',
                                                    'PHGyellow',
@@ -283,11 +283,11 @@ dummyDf$category <- factor(dummyDf$category,
                                        'Columbia_Broad_Rush_m109')))
 
  dummyDf <- dplyr::left_join(dummyDf,customDf,by=c('Module'='moduleName'))
-dummyDf$Cluster <- factor(dummyDf$Cluster,levels = (c('Astrocytic',
-                                                      'Microglial',
-                                                      'Neuronal',
-                                                      'Oligodendroglial',
-                                                      'Proteostasis')))
+dummyDf$Cluster <- factor(dummyDf$Cluster,levels = (c('Consensus Cluster A',
+                                                      'Consensus Cluster B',
+                                                      'Consensus Cluster C',
+                                                      'Consensus Cluster D',
+                                                      'Consensus Cluster E')))
 
 dummyDf$Module <- factor(dummyDf$Module,levels = (c('TCXblue',
                                                    'IFGyellow',
@@ -473,11 +473,11 @@ dummyDf$category <- gsub('ad\\.control\\.MALE\\.random\\.UP','Male, Up',dummyDf$
 dummyDf <- dplyr::left_join(dummyDf,modMeta)
 #dummyDf$ModuleBrainRegion <- factor(dummyDf$ModuleBrainRegion,levels = unique(dummyDf$ModuleBrainRegion))
  dummyDf <- dplyr::left_join(dummyDf,customDf,by=c('Module'='moduleName'))
-dummyDf$Cluster <- factor(dummyDf$Cluster,levels = (c('Astrocytic',
-                                                      'Microglial',
-                                                      'Neuronal',
-                                                      'Oligodendroglial',
-                                                      'Proteostasis')))
+dummyDf$Cluster <- factor(dummyDf$Cluster,levels = (c('Consensus Cluster A',
+                                                      'Consensus Cluster B',
+                                                      'Consensus Cluster C',
+                                                      'Consensus Cluster D',
+                                                      'Consensus Cluster E')))
 dummyDf$category <- factor(dummyDf$category,rev(c('Female, Up',
                                                   'Male, Up',
                                                   'Female, Down',
