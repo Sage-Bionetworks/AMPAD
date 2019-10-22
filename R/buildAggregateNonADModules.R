@@ -1,4 +1,4 @@
-buildAggregateModules <- function(fullManifestOfDAta){
+buildAggregateNonADModules <- function(fullManifestOfDAta){
   #syn11914811
   #replace this with the appropriate synapse call soon
   fob1 <- synapser::synGet('syn11914811')
@@ -33,10 +33,10 @@ buildAggregateModules <- function(fullManifestOfDAta){
   enrichmentMatrix2 <- tidyr::gather(enrichmentMatrix2,key='ModuleNameFull',value='Pvalue',-geneSet)
 
   enrichmentMatrix2 <- dplyr::mutate(enrichmentMatrix2,adj.pval=p.adjust(Pvalue,method='bonferroni'))
-  enrichmentMatrix3 <- dplyr::filter(enrichmentMatrix2,adj.pval<=0.05)
+  #enrichmentMatrix3 <- dplyr::filter(enrichmentMatrix2,adj.pval<=0.05)
   indModsSumm <- dplyr::group_by(indMods,ModuleNameFull,brainRegion,method)
   indModsAgg <- dplyr::summarise(indModsSumm,sizeOfMod=length(GeneID))
-  enrichmentMatrix4 <- dplyr::left_join(enrichmentMatrix3,indModsAgg)
+  enrichmentMatrix4 <- dplyr::left_join(enrichmentMatrix2,indModsAgg)
   enrSum <- dplyr::group_by(enrichmentMatrix4,brainRegion)
   enrAgg <- dplyr::summarise(enrSum,uniqueMods = length(unique(ModuleNameFull)))
   indSum <- dplyr::group_by(indModsAgg,brainRegion)
@@ -148,6 +148,6 @@ buildAggregateModules <- function(fullManifestOfDAta){
                                    phg_mods$df,
                                    fp_mods$df)
 
-  save(dlpfc_mods,cbe_mods,tcx_mods,ifg_mods,stg_mods,phg_mods,fp_mods,file='aggregateModules.rda')
-  rSynapseUtilities::makeTable(AggregateModuleManifest,'AMP-AD aggregate modules',projectId='syn2370594')
+  save(dlpfc_mods,cbe_mods,tcx_mods,ifg_mods,stg_mods,phg_mods,fp_mods,file='aggregateNonAdModules.rda')
+  #rSynapseUtilities::makeTable(AggregateModuleManifest,'AMP-AD aggregate modules',projectId='syn2370594')
 }

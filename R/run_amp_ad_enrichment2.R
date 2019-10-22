@@ -13,10 +13,10 @@ run_amp_ad_enrichment2 <- function(geneSetList,
   #data frame with module name, gene set name, p-value, and odds ratio of enrichment, intersections, and gene set sizes
   library(dplyr)
   cat('logging into Synapse...\n')
-  synapseClient::synapseLogin()
+  synapser::synLogin()
   #grab module definitions
   cat('pulling modules...\n')
-  allMods <- synapseClient::synTableQuery(paste0("SELECT * FROM ",manifestId))@values
+  allMods <- synapser::synTableQuery(paste0("SELECT * FROM ",manifestId))$asDataFrame()
 
   listify <- function(x,y,z){
     ###fxn will listify a long form table
