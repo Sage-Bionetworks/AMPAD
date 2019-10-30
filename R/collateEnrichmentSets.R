@@ -102,8 +102,8 @@ collateEnrichmentSets = function(){
   #pull cell types
   enrichmentSets$cell <- lapply(GeneSets$Cell_Markers,unique)
 
-  df11 <- data.table::fread('mathyscellmarkers.csv',data.table=F)
-  enrichmentSets$cell2 <- utilityFunctions::listifyWrapper(df11$subpopulation,df11$gene.name)
+  df11 <- data.table::fread('lakeSCGeneSig.csv',data.table=F)
+  enrichmentSets$cell2 <- utilityFunctions::listifyWrapper(df11$Cluster,df11$Gene)
 
 
 
