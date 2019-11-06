@@ -1,10 +1,12 @@
 getAdGenetics <- function(synId='syn10338156'){
-  moduleSet <- synapseClient::synTableQuery(paste0("SELECT DISTINCT ModuleNameFull, Module, method, brainRegion from ",synId))@values
+  moduleSet <- synapser::synTableQuery(paste0("SELECT DISTINCT ModuleNameFull, Module, method, brainRegion from ",synId))$asDataFrame()
+  #moduleSet <- moduleSet[,-c(1,2)]
   colnames(moduleSet)[c(3:4)] <- c('ModuleMethod','ModuleBrainRegion')
 
 
   #magma enrichments
-  magmaResults <- synapseClient::synTableQuery("SELECT * FROM syn10380432")@values
+  magmaResults <- synapser::synTableQuery("SELECT * FROM syn10380432")$asDataFrame()
+  magmaResults <- magmaResults[,-c(1,2)]
   magmaResults <- dplyr::select(magmaResults,SET,BETA,P)
   colnames(magmaResults) <- c('ModuleNameFull',
                               'GeneSetEffect',
@@ -33,8 +35,8 @@ getAdGenetics <- function(synId='syn10338156'){
 
   #####igap, dbgap, and genecards for ad genes enrichments
   #source('enrichmentAnalysis/run_amp_ad_enrichment.R')
-  genesets1 <- synapseClient::synGet('syn5923958')
-  load(synapseClient::getFileLocation(genesets1))
+  genesets1 <- synapser::synGet('syn5923958')
+  load(genesets1$path)
   dbgap <- AMPAD::pullReferenceGeneSets("http://amp.pharm.mssm.edu/Enrichr/geneSetLibrary?mode=text&libraryName=dbGaP")
   #kegg, wikipathways, biocarta, panther, jensen_diseases, omim_disease, omim_expanded
   kegg <- AMPAD::pullReferenceGeneSets("http://amp.pharm.mssm.edu/Enrichr/geneSetLibrary?mode=text&libraryName=KEGG_2016")
@@ -61,14 +63,14 @@ getAdGenetics <- function(synId='syn10338156'){
   adList$omim <- omim_disease$`alzheimer_disease`
   adList$omimExpanded <- omim_expanded$`alzheimer_disease`
 
-  genecardsObj <- synapseClient::synGet('syn10507702')
-  genecards <- data.table::fread(synapseClient::getFileLocation(genecardsObj),data.table=F)
+  genecardsObj <- synapser::synGet('syn10507702')
+  genecards <- data.table::fread(genecardsObj$path,data.table=F)
 
   adList$genecards <- genecards$`Gene Symbol`
 
 
 
-  adTest <- AMPAD::run_amp_ad_enrichment(adList,
+  adTest <- AMPAD::run_amp_ad_enrichment2(adList,
                                   'genetics',
                                   manifestId=synId)
 

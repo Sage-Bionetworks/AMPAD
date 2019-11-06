@@ -212,15 +212,18 @@ g <- ggplot2::ggplot(dummyDf,
                                   color = Cluster))
 g <- g + ggplot2::geom_count()
 #g <- g + ggplot2::scale_y_log10()
-
-g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+g <- g + ggplot2::labs(y = 'Cell Type Signature',
+                       x = 'AD Coexpression Module')
+#g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+#g <- g + cowplot::theme_cowplot(12)
+#g <- g + ggplot2::theme_update(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+g <- g + AMPAD::cowplot_rotated(11)
 #g <- g + ggplot2::theme(axis.text.x=ggplot2::element_blank(),
 #        axis.ticks.x=ggplot2::element_blank())
 #g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1), breaks = c(1.5, 3,8,20,50,110),trans='log')
 #g <- g + ggplot2::coord_flip()
 #g <- g + ggplot2::ggtitle('Enrichment for Cell Type Specific Signatures')
-g <- g + ggplot2::labs(y = 'Cell Type Signature',
-                       x = 'AD Coexpression Module')
+
 
 g
 ggplot2::ggsave('figure2B.tiff',device='tiff',units='mm',width=85,height=85,scale=1.8)
@@ -326,7 +329,7 @@ g <- ggplot2::ggplot(dummyDf,
 g <- g + ggplot2::geom_count()
 #g <- g + ggplot2::scale_y_log10()
 
-g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+#g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
 #g <- g + ggplot2::theme(axis.text.x=ggplot2::element_blank(),
 #        axis.ticks.x=ggplot2::element_blank())
 #g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1), breaks = c(1.5, 3,8,20,50,110),trans='log')
@@ -334,6 +337,8 @@ g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 
 #g <- g + ggplot2::ggtitle('Enrichment for Cell Type Specific Signatures')
 g <- g + ggplot2::labs(y = 'Lake et al. Cell Type Signature',
                        x = 'AD Coexpression Module')
+
+g <- g + AMPAD::cowplot_rotated(11)
 
 g
 ggplot2::ggsave('lake.tiff',device='tiff',units='mm',width=85,height=85,scale=1.8)
@@ -439,7 +444,7 @@ g <- ggplot2::ggplot(dummyDf,
 g <- g + ggplot2::geom_count()
 #g <- g + ggplot2::scale_y_log10()
 
-g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+#g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
 #g <- g + ggplot2::theme(axis.text.x=ggplot2::element_blank(),
 #        axis.ticks.x=ggplot2::element_blank())
 #g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1), breaks = c(1.5, 3,8,20,50,110),trans='log')
@@ -447,6 +452,7 @@ g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 
 #g <- g + ggplot2::ggtitle('Enrichment for Cell Type Specific Signatures')
 g <- g + ggplot2::labs(y = 'CommonMind Differentially Expressed Module',
                        x = 'AD Coexpression Module')
+g <- g + AMPAD::cowplot_rotated(11)
 
 g
 ggplot2::ggsave('cmc.tiff',device='tiff',units='mm',width=85,height=85,scale=1.8)
@@ -553,7 +559,7 @@ g <- ggplot2::ggplot(dummyDf,
 g <- g + ggplot2::geom_count()
 #g <- g + ggplot2::scale_y_log10()
 
-g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+#g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
 #g <- g + ggplot2::theme(axis.text.x=ggplot2::element_blank(),
 #        axis.ticks.x=ggplot2::element_blank())
 #g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1), breaks = c(1.5, 3,8,20,50,110),trans='log')
@@ -561,9 +567,10 @@ g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 
 #g <- g + ggplot2::ggtitle('Enrichment for Cell Type Specific Signatures')
 g <- g + ggplot2::labs(y = 'Zhang et al. Module',
                        x = 'AD Coexpression Module')
+g <- g + AMPAD::cowplot_rotated(11)
 
 g
-ggplot2::ggsave('mathys.tiff',device='tiff',units='mm',width=85,height=85,scale=1.8)
+ggplot2::ggsave('zhanggaiteri.tiff',device='tiff',units='mm',width=85,height=85,scale=1.8)
 #ggplot2::ggsave('cell_enrichments.png')
 ```
 
@@ -976,10 +983,12 @@ g <- ggplot2::ggplot(dummyDf,
                                   color = Cluster))
 g <- g + ggplot2::geom_count()
 
-g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+#g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
 
 g <- g + ggplot2::labs(y = 'AD Signature',
                        x = 'AD Coexpression Module')
+
+g <- g + AMPAD::cowplot_rotated(9)
 g
 ggplot2::ggsave('figure2C.tiff',device='tiff',units='mm',width=85,height=85,scale=1.8)
 #ggplot2::ggsave('ad_signature_enrichments.png')
@@ -1168,10 +1177,12 @@ g <- ggplot2::ggplot(dummyDf,
                                   color = Cluster))
 g <- g + ggplot2::geom_count()
 
-g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+#g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
 
 g <- g + ggplot2::labs(y = 'DEG Sex Specific Meta Analysis',
                        x = 'AD Coexpression Module')
+
+g <- g + AMPAD::cowplot_rotated(11)
 g
 ggplot2::ggsave('figure2D.tiff',device='tiff',units='mm',width=85,height=85,scale=1.8)
 #ggplot2::ggsave('deg_signature_enrichments.png')

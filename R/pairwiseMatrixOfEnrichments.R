@@ -1,8 +1,10 @@
 pairwiseMatrixOfEnrichments = function(synId){
-  synapseClient::synapseLogin()
+  synapser::synLogin()
 
   ##pull aggregate modules
-  aggregateModules <- rSynapseUtilities::loadFullTable(synId)
+  #aggregateModules <- rSynapseUtilities::loadFullTable(synId)
+  aggregateModules <- synapser::synTableQuery(paste0("select * from ",synId))$asDataFrame()
+  aggregateModules <- aggregateModules[,-c(1,2)]
 
   #View(aggregateModules)
 
