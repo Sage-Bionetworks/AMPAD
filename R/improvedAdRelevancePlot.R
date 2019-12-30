@@ -172,7 +172,7 @@ improvedAdRelevancePlot <- function(){
   summMatrix$category <- factor(summMatrix$category,levels = summMatrix$category)
 
   g <- ggplot2::ggplot(summMatrix,
-                       ggplot2::aes(x=category, y=percentSig, fill=category))
+                       ggplot2::aes(x=category, y=percentSig))
 
   g <- g + ggplot2::geom_bar(position=ggplot2::position_dodge(),
                              stat="identity")
@@ -180,22 +180,20 @@ improvedAdRelevancePlot <- function(){
   g <- g + ggplot2::geom_errorbar(ggplot2::aes(ymin=percentSig-se, ymax=percentSig+se),
                   width=.2,                    # Width of the error bars
                   position=ggplot2::position_dodge(.9))
-  #g <- g + cowplot::theme_cowplot(12)
+  g <- g + cowplot::theme_cowplot(12)
   g <- g + ggplot2::labs(x = 'System Biology Derived AD Geneset',
                          y = 'Percent pairwise associations significant')
-  g <- g + ggplot2::theme_update(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1),
-                                 panel.background = ggplot2::element_rect(fill = "white", colour = "white"),
-                                 panel.border = ggplot2::element_rect(colour = "white"))
+  #g <- g + ggplot2::theme_update(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1),
+  #                               panel.background = ggplot2::element_rect(fill = "white", colour = "white"),
+  #                               panel.border = ggplot2::element_rect(colour = "white"))
 
 
-
-  #g <- g + ggplot2::coord_flip()
-  #g <- g + ggplot2::ggtitle('Enrichment for AD signatures')
+  g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
 
 
   #
   g
   #g2 <- cowplot::plot_grid(g)
-  ggplot2::ggsave('figure1.tiff',device='tiff',units='mm',width=114,height=85,scale=1.5)
+  ggplot2::ggsave('figure1.tiff',device='tiff',units='mm',width=114,height=85,scale=2)
 
 }
