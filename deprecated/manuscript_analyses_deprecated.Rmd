@@ -1,0 +1,1458 @@
+---
+title: "AMP-AD Manuscript Analyses"
+output: html_notebook
+---
+
+
+make pairwise enrichment matrix
+
+```{r}
+AMPAD::pairwiseMatrixOfEnrichments('syn11932957')
+```
+Pull targeted genesets
+
+```{r,include =F}
+targetedGeneSets <- AMPAD::collateEnrichmentSets()
+#str(targetedGeneSets)
+```
+
+make simple summary table of differential expressed genes from random effect analysis
+```{r,include=F}
+degMetaDf <- data.frame(gene=targetedGeneSets$degMeta$ad.control.random.DOWN,direction='Down')
+```
+
+
+For each of the three build the data frame of the respective Analyses
+
+```{r,include=FALSE}
+targetedEnrichment <- list()
+targetedEnrichment$ad <- AMPAD::run_amp_ad_enrichment2(targetedGeneSets$ad,
+                                                      'AD',
+                                                      hgnc = TRUE,
+                                                      manifestId = 'syn11932957')
+
+targetedEnrichment$cell <- AMPAD::run_amp_ad_enrichment2(targetedGeneSets$cell,
+                                                        'Cell',
+                                                        hgnc= TRUE,
+                                                        manifestId = 'syn11932957')
+
+targetedEnrichment$cell2 <- AMPAD::run_amp_ad_enrichment2(targetedGeneSets$cell2,
+                                                        'Mathys',
+                                                        hgnc= TRUE,
+                                                        manifestId = 'syn11932957')
+
+targetedEnrichment$scz <- AMPAD::run_amp_ad_enrichment2(targetedGeneSets$scz,
+                                                        'scz',
+                                                        hgnc= FALSE,
+                                                        manifestId = 'syn11932957')
+
+targetedEnrichment$control <- AMPAD::run_amp_ad_enrichment2(targetedGeneSets$control,
+                                                        'control',
+                                                        hgnc= FALSE,
+                                                        manifestId = 'syn11932957')
+
+targetedEnrichment$mssm2 <- AMPAD::run_amp_ad_enrichment2(targetedGeneSets$MSSM2,
+                                                        'zhang',
+                                                        hgnc= TRUE,
+                                                        manifestId = 'syn11932957')
+
+targetedEnrichment$mito <- AMPAD::run_amp_ad_enrichment2(targetedGeneSets$mito,
+                                                        'Mito',
+                                                        hgnc= TRUE,
+                                                        manifestId = 'syn11932957')
+
+targetedEnrichment$deg <- AMPAD::run_amp_ad_enrichment2(targetedGeneSets$deg,
+                                                       'DEG',
+                                                       hgnc=FALSE,
+                                                       manifestId = 'syn11932957')
+
+targetedEnrichment$degMeta <- AMPAD::run_amp_ad_enrichment2(targetedGeneSets$degMeta,
+                                                           'DEGmeta',
+                                                           hgnc=FALSE,
+                                                           manifestId = 'syn11932957')
+
+targetedEnrichment$targetPathways <- AMPAD::run_amp_ad_enrichment2(targetedGeneSets$targetedPathways,
+                                                           'TargetedPathways',
+                                                           hgnc=FALSE,
+                                                           manifestId = 'syn11932957')
+
+targetedEnrichment$ad_deg <- AMPAD::run_amp_ad_enrichment2_lists(targetedGeneSets$deg,
+                                                                 'ADDEG',
+                                                                 targetedGeneSets$ad,
+                                                                 hgnc = T,
+                                                                 testhgnc = F)
+
+targetedEnrichment$ad_degmeta <- AMPAD::run_amp_ad_enrichment2_lists(targetedGeneSets$degMeta,
+                                                                 'ADDEGMeta',
+                                                                 targetedGeneSets$ad,
+                                                                 hgnc = T,
+                                                                 testhgnc = F)
+
+targetedEnrichment$degFull <- rbind(targetedEnrichment$deg,targetedEnrichment$ad_deg)
+targetedEnrichment$degMetaFull <- rbind(targetedEnrichment$degMeta, targetedEnrichment$ad_degmeta)
+```
+
+
+Add adjusted p-values 
+
+```{r}
+targetedEnrichment$ad$adj.pval <- p.adjust(targetedEnrichment$ad$fisherPval,method='fdr')
+targetedEnrichment$deg$adj.pval <- p.adjust(targetedEnrichment$deg$fisherPval,method='fdr')
+targetedEnrichment$cell$adj.pval <- p.adjust(targetedEnrichment$cell$fisherPval,method='fdr')
+targetedEnrichment$cell2$adj.pval <- p.adjust(targetedEnrichment$cell2$fisherPval,method='fdr')
+targetedEnrichment$scz$adj.pval <- p.adjust(targetedEnrichment$scz$fisherPval,method='fdr')
+targetedEnrichment$control$adj.pval <- p.adjust(targetedEnrichment$control$fisherPval,method='fdr')
+targetedEnrichment$mito$adj.pval <- p.adjust(targetedEnrichment$mito$fisherPval,method='fdr')
+targetedEnrichment$mssm2$adj.pval <- p.adjust(targetedEnrichment$mssm2$fisherPval,method='fdr')
+targetedEnrichment$degMeta$adj.pval <- p.adjust(targetedEnrichment$degMeta$fisherPval,method='fdr')
+targetedEnrichment$targetPathways$adj.pval <- p.adjust(targetedEnrichment$targetPathways$fisherPval,method='fdr')
+targetedEnrichment$degFull$adj.pval <- p.adjust(targetedEnrichment$degFull$fisherPval,method='fdr')
+targetedEnrichment$degMetaFull$adj.pval <- p.adjust(targetedEnrichment$degMetaFull$fisherPval,method='fdr')
+```
+
+Make cell type summary plots
+
+x- axis : module
+y- axis fisher-'s odds ratio
+
+```{r}
+modMeta <- AMPAD::getModuleMetainfo('syn11932957')
+dummyDf <- targetedEnrichment$cell
+dummyDf$fisherOR[dummyDf$adj.pval>=0.05] <- NA
+#dummyDf <- dplyr::filter(targetedEnrichment$cell,adj.pval<=0.05)
+dummyDf <- dplyr::left_join(dummyDf,modMeta)
+dummyDf$category <- gsub('Zhang\\.','',dummyDf$category)
+dummyDf$category <- factor(dummyDf$category,levels = rev(c('Astrocyte',
+                                                       'Endothelial',
+                                                       'Microglia',
+                                                       'Neuron',
+                                                       'MyelinOligos',
+                                                       'NewOligos',
+                                                       'OPC')))
+#dummyDf$ModuleBrainRegion <- factor(dummyDf$ModuleBrainRegion,levels = unique(dummyDf$ModuleBrainRegion))
+customDf <- data.frame(moduleName=c('TCXblue',
+                                      'IFGyellow',
+                                      'PHGyellow',
+                                      'DLPFCblue',
+                                      'CBEturquoise',
+                                      'STGblue',
+                                      'PHGturquoise',
+                                      'IFGturquoise',
+                                      'TCXturquoise',
+                                      'FPturquoise',
+                                      'IFGbrown',
+                                      'STGbrown',
+                                      'DLPFCyellow',
+                                      'TCXgreen',
+                                      'FPyellow',
+                                      'CBEyellow',
+                                      'PHGbrown',
+                                      'DLPFCbrown',
+                                      'STGyellow',
+                                      'PHGgreen',
+                                      'CBEbrown',
+                                      'TCXyellow',
+                                      'IFGblue',
+                                      'FPblue',
+                                      'FPbrown',
+                                      'CBEblue',
+                                      'DLPFCturquoise',
+                                      'TCXbrown',
+                                      'STGturquoise',
+                                      'PHGblue'),
+                         Cluster= c(rep('Consensus Cluster A',3),
+                                       rep('Consensus Cluster B',7),
+                                       rep('Consensus Cluster C',7),
+                                       rep('Consensus Cluster D',7),
+                                       rep('Consensus Cluster E',6)),
+                         stringsAsFactors=F)
+ dummyDf <- dplyr::left_join(dummyDf,customDf,by=c('Module'='moduleName'))
+ dummyDf$Cluster <- factor(dummyDf$Cluster,levels = (c('Consensus Cluster A',
+                                                      'Consensus Cluster B',
+                                                      'Consensus Cluster C',
+                                                      'Consensus Cluster D',
+                                                      'Consensus Cluster E')))
+dummyDf$Module <- factor(dummyDf$Module,levels = (c('TCXblue',
+                                                   'IFGyellow',
+                                                   'PHGyellow',
+                                                   'DLPFCblue',
+                                                   'CBEturquoise',
+                                                   'STGblue',
+                                                   'PHGturquoise',
+                                                   'IFGturquoise',
+                                                   'TCXturquoise',
+                                                   'FPturquoise',
+                                                   'IFGbrown',
+                                                   'STGbrown',
+                                                   'DLPFCyellow',
+                                                   'TCXgreen',
+                                                   'FPyellow',
+                                                   'CBEyellow',
+                                                   'PHGbrown',
+                                                   'DLPFCbrown',
+                                                   'STGyellow',
+                                                   'PHGgreen',
+                                                   'CBEbrown',
+                                                   'TCXyellow',
+                                                   'IFGblue',
+                                                   'FPblue',
+                                                   'FPbrown',
+                                                   'CBEblue',
+                                                   'DLPFCturquoise',
+                                                   'TCXbrown',
+                                                   'STGturquoise',
+                                                   'PHGblue')))
+
+ 
+
+g <- ggplot2::ggplot(dummyDf,
+                     ggplot2::aes(x = Module,
+                                  y = category,
+                                  size = fisherOR,
+                                  color = Cluster))
+g <- g + ggplot2::geom_count()
+#g <- g + ggplot2::scale_y_log10()
+g <- g + ggplot2::labs(y = 'Cell Type Signature',
+                       x = 'AD Coexpression Module')
+#g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+#g <- g + cowplot::theme_cowplot(12)
+#g <- g + ggplot2::theme_update(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+g <- g + AMPAD::cowplot_rotated(11)
+#g <- g + ggplot2::theme(axis.text.x=ggplot2::element_blank(),
+#        axis.ticks.x=ggplot2::element_blank())
+#g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1), breaks = c(1.5, 3,8,20,50,110),trans='log')
+#g <- g + ggplot2::coord_flip()
+#g <- g + ggplot2::ggtitle('Enrichment for Cell Type Specific Signatures')
+
+
+g
+ggplot2::ggsave('figure2B.tiff',device='tiff',units='mm',width=85,height=85,scale=1.8)
+#ggplot2::ggsave('cell_enrichments.png')
+```
+
+
+```{r}
+modMeta <- AMPAD::getModuleMetainfo('syn11932957')
+dummyDf <- targetedEnrichment$cell2
+dummyDf$fisherOR[dummyDf$adj.pval>=0.05] <- NA
+#dummyDf <- dplyr::filter(targetedEnrichment$cell,adj.pval<=0.05)
+dummyDf <- dplyr::left_join(dummyDf,modMeta)
+# dummyDf$category <- gsub('Zhang\\.','',dummyDf$category)
+# dummyDf$category <- factor(dummyDf$category,levels = rev(c('Astrocyte',
+#                                                        'Endothelial',
+#                                                        'Microglia',
+#                                                        'Neuron',
+#                                                        'MyelinOligos',
+#                                                        'NewOligos',
+#                                                        'OPC')))
+#dummyDf$ModuleBrainRegion <- factor(dummyDf$ModuleBrainRegion,levels = unique(dummyDf$ModuleBrainRegion))
+customDf <- data.frame(moduleName=c('TCXblue',
+                                      'IFGyellow',
+                                      'PHGyellow',
+                                      'DLPFCblue',
+                                      'CBEturquoise',
+                                      'STGblue',
+                                      'PHGturquoise',
+                                      'IFGturquoise',
+                                      'TCXturquoise',
+                                      'FPturquoise',
+                                      'IFGbrown',
+                                      'STGbrown',
+                                      'DLPFCyellow',
+                                      'TCXgreen',
+                                      'FPyellow',
+                                      'CBEyellow',
+                                      'PHGbrown',
+                                      'DLPFCbrown',
+                                      'STGyellow',
+                                      'PHGgreen',
+                                      'CBEbrown',
+                                      'TCXyellow',
+                                      'IFGblue',
+                                      'FPblue',
+                                      'FPbrown',
+                                      'CBEblue',
+                                      'DLPFCturquoise',
+                                      'TCXbrown',
+                                      'STGturquoise',
+                                      'PHGblue'),
+                         Cluster= c(rep('Consensus Cluster A',3),
+                                       rep('Consensus Cluster B',7),
+                                       rep('Consensus Cluster C',7),
+                                       rep('Consensus Cluster D',7),
+                                       rep('Consensus Cluster E',6)),
+                         stringsAsFactors=F)
+ dummyDf <- dplyr::left_join(dummyDf,customDf,by=c('Module'='moduleName'))
+ dummyDf$Cluster <- factor(dummyDf$Cluster,levels = (c('Consensus Cluster A',
+                                                      'Consensus Cluster B',
+                                                      'Consensus Cluster C',
+                                                      'Consensus Cluster D',
+                                                      'Consensus Cluster E')))
+dummyDf$Module <- factor(dummyDf$Module,levels = (c('TCXblue',
+                                                   'IFGyellow',
+                                                   'PHGyellow',
+                                                   'DLPFCblue',
+                                                   'CBEturquoise',
+                                                   'STGblue',
+                                                   'PHGturquoise',
+                                                   'IFGturquoise',
+                                                   'TCXturquoise',
+                                                   'FPturquoise',
+                                                   'IFGbrown',
+                                                   'STGbrown',
+                                                   'DLPFCyellow',
+                                                   'TCXgreen',
+                                                   'FPyellow',
+                                                   'CBEyellow',
+                                                   'PHGbrown',
+                                                   'DLPFCbrown',
+                                                   'STGyellow',
+                                                   'PHGgreen',
+                                                   'CBEbrown',
+                                                   'TCXyellow',
+                                                   'IFGblue',
+                                                   'FPblue',
+                                                   'FPbrown',
+                                                   'CBEblue',
+                                                   'DLPFCturquoise',
+                                                   'TCXbrown',
+                                                   'STGturquoise',
+                                                   'PHGblue')))
+
+ 
+
+g <- ggplot2::ggplot(dummyDf,
+                     ggplot2::aes(x = Module,
+                                  y = category,
+                                  size = fisherOR,
+                                  color = Cluster))
+g <- g + ggplot2::geom_count()
+#g <- g + ggplot2::scale_y_log10()
+
+#g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+#g <- g + ggplot2::theme(axis.text.x=ggplot2::element_blank(),
+#        axis.ticks.x=ggplot2::element_blank())
+#g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1), breaks = c(1.5, 3,8,20,50,110),trans='log')
+#g <- g + ggplot2::coord_flip()
+#g <- g + ggplot2::ggtitle('Enrichment for Cell Type Specific Signatures')
+g <- g + ggplot2::labs(y = 'Lake et al. Cell Type Signature',
+                       x = 'AD Coexpression Module')
+
+g <- g + AMPAD::cowplot_rotated(11)
+
+g
+ggplot2::ggsave('lake.tiff',device='tiff',units='mm',width=85,height=85,scale=1.8)
+#ggplot2::ggsave('cell_enrichments.png')
+```
+
+```{r}
+modMeta <- AMPAD::getModuleMetainfo('syn11932957')
+dummyDf <- targetedEnrichment$scz
+dummyDf <- dplyr::filter(dummyDf,category == 'yellow' | category == 'red' | category == 'blue' | category == 'lightyellow' | category == 'greenyellow' | category == 'cyan' | category == 'grey60')
+dummyDf$fisherOR[dummyDf$adj.pval>=0.05] <- NA
+#dummyDf <- dplyr::filter(targetedEnrichment$cell,adj.pval<=0.05)
+dummyDf <- dplyr::left_join(dummyDf,modMeta)
+# dummyDf$category <- gsub('Zhang\\.','',dummyDf$category)
+# dummyDf$category <- factor(dummyDf$category,levels = rev(c('Astrocyte',
+#                                                        'Endothelial',
+#                                                        'Microglia',
+#                                                        'Neuron',
+#                                                        'MyelinOligos',
+#                                                        'NewOligos',
+#                                                        'OPC')))
+#dummyDf$ModuleBrainRegion <- factor(dummyDf$ModuleBrainRegion,levels = unique(dummyDf$ModuleBrainRegion))
+customDf <- data.frame(moduleName=c('TCXblue',
+                                      'IFGyellow',
+                                      'PHGyellow',
+                                      'DLPFCblue',
+                                      'CBEturquoise',
+                                      'STGblue',
+                                      'PHGturquoise',
+                                      'IFGturquoise',
+                                      'TCXturquoise',
+                                      'FPturquoise',
+                                      'IFGbrown',
+                                      'STGbrown',
+                                      'DLPFCyellow',
+                                      'TCXgreen',
+                                      'FPyellow',
+                                      'CBEyellow',
+                                      'PHGbrown',
+                                      'DLPFCbrown',
+                                      'STGyellow',
+                                      'PHGgreen',
+                                      'CBEbrown',
+                                      'TCXyellow',
+                                      'IFGblue',
+                                      'FPblue',
+                                      'FPbrown',
+                                      'CBEblue',
+                                      'DLPFCturquoise',
+                                      'TCXbrown',
+                                      'STGturquoise',
+                                      'PHGblue'),
+                         Cluster= c(rep('Consensus Cluster A',3),
+                                       rep('Consensus Cluster B',7),
+                                       rep('Consensus Cluster C',7),
+                                       rep('Consensus Cluster D',7),
+                                       rep('Consensus Cluster E',6)),
+                         stringsAsFactors=F)
+ dummyDf <- dplyr::left_join(dummyDf,customDf,by=c('Module'='moduleName'))
+ dummyDf$Cluster <- factor(dummyDf$Cluster,levels = (c('Consensus Cluster A',
+                                                      'Consensus Cluster B',
+                                                      'Consensus Cluster C',
+                                                      'Consensus Cluster D',
+                                                      'Consensus Cluster E')))
+dummyDf$Module <- factor(dummyDf$Module,levels = (c('TCXblue',
+                                                   'IFGyellow',
+                                                   'PHGyellow',
+                                                   'DLPFCblue',
+                                                   'CBEturquoise',
+                                                   'STGblue',
+                                                   'PHGturquoise',
+                                                   'IFGturquoise',
+                                                   'TCXturquoise',
+                                                   'FPturquoise',
+                                                   'IFGbrown',
+                                                   'STGbrown',
+                                                   'DLPFCyellow',
+                                                   'TCXgreen',
+                                                   'FPyellow',
+                                                   'CBEyellow',
+                                                   'PHGbrown',
+                                                   'DLPFCbrown',
+                                                   'STGyellow',
+                                                   'PHGgreen',
+                                                   'CBEbrown',
+                                                   'TCXyellow',
+                                                   'IFGblue',
+                                                   'FPblue',
+                                                   'FPbrown',
+                                                   'CBEblue',
+                                                   'DLPFCturquoise',
+                                                   'TCXbrown',
+                                                   'STGturquoise',
+                                                   'PHGblue')))
+
+ 
+
+g <- ggplot2::ggplot(dummyDf,
+                     ggplot2::aes(x = Module,
+                                  y = category,
+                                  size = fisherOR,
+                                  color = Cluster))
+g <- g + ggplot2::geom_count()
+#g <- g + ggplot2::scale_y_log10()
+
+#g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+#g <- g + ggplot2::theme(axis.text.x=ggplot2::element_blank(),
+#        axis.ticks.x=ggplot2::element_blank())
+#g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1), breaks = c(1.5, 3,8,20,50,110),trans='log')
+#g <- g + ggplot2::coord_flip()
+#g <- g + ggplot2::ggtitle('Enrichment for Cell Type Specific Signatures')
+g <- g + ggplot2::labs(y = 'CommonMind Differentially Expressed Module',
+                       x = 'AD Coexpression Module')
+g <- g + AMPAD::cowplot_rotated(11)
+
+g
+ggplot2::ggsave('cmc.tiff',device='tiff',units='mm',width=85,height=85,scale=1.8)
+#ggplot2::ggsave('cell_enrichments.png')
+```
+
+
+```{r}
+modMeta <- AMPAD::getModuleMetainfo('syn11932957')
+dummyDf <- targetedEnrichment$mssm2
+dummyDf <- dplyr::filter(dummyDf,category == 'Yellow' | category == 'Pink' | category == 'Gray.1' | category == 'Seashell' | category == 'Red.3' | category == 'Green.yellow' | category == 'Red' | category == 'Gold.2' | category == 'Tan' | category == 'Gold.3' | category == 'Light.yellow' | category == 'Brown.2' | category == 'Dark.cyan' | category == 'Khaki' | category == 'Grey.60' | category == 'Purple' | category == 'Green.4' | category == 'Honey.dew' | category == 'Red.2' | category == 'Beige')
+dummyDf$fisherOR[dummyDf$adj.pval>=0.05] <- NA
+#dummyDf <- dplyr::filter(targetedEnrichment$cell,adj.pval<=0.05)
+dummyDf <- dplyr::left_join(dummyDf,modMeta)
+# dummyDf$category <- gsub('Zhang\\.','',dummyDf$category)
+# dummyDf$category <- factor(dummyDf$category,levels = rev(c('Astrocyte',
+#                                                        'Endothelial',
+#                                                        'Microglia',
+#                                                        'Neuron',
+#                                                        'MyelinOligos',
+#                                                        'NewOligos',
+#                                                        'OPC')))
+#dummyDf$ModuleBrainRegion <- factor(dummyDf$ModuleBrainRegion,levels = unique(dummyDf$ModuleBrainRegion))
+customDf <- data.frame(moduleName=c('TCXblue',
+                                      'IFGyellow',
+                                      'PHGyellow',
+                                      'DLPFCblue',
+                                      'CBEturquoise',
+                                      'STGblue',
+                                      'PHGturquoise',
+                                      'IFGturquoise',
+                                      'TCXturquoise',
+                                      'FPturquoise',
+                                      'IFGbrown',
+                                      'STGbrown',
+                                      'DLPFCyellow',
+                                      'TCXgreen',
+                                      'FPyellow',
+                                      'CBEyellow',
+                                      'PHGbrown',
+                                      'DLPFCbrown',
+                                      'STGyellow',
+                                      'PHGgreen',
+                                      'CBEbrown',
+                                      'TCXyellow',
+                                      'IFGblue',
+                                      'FPblue',
+                                      'FPbrown',
+                                      'CBEblue',
+                                      'DLPFCturquoise',
+                                      'TCXbrown',
+                                      'STGturquoise',
+                                      'PHGblue'),
+                         Cluster= c(rep('Consensus Cluster A',3),
+                                       rep('Consensus Cluster B',7),
+                                       rep('Consensus Cluster C',7),
+                                       rep('Consensus Cluster D',7),
+                                       rep('Consensus Cluster E',6)),
+                         stringsAsFactors=F)
+ dummyDf <- dplyr::left_join(dummyDf,customDf,by=c('Module'='moduleName'))
+ dummyDf$Cluster <- factor(dummyDf$Cluster,levels = (c('Consensus Cluster A',
+                                                      'Consensus Cluster B',
+                                                      'Consensus Cluster C',
+                                                      'Consensus Cluster D',
+                                                      'Consensus Cluster E')))
+dummyDf$Module <- factor(dummyDf$Module,levels = (c('TCXblue',
+                                                   'IFGyellow',
+                                                   'PHGyellow',
+                                                   'DLPFCblue',
+                                                   'CBEturquoise',
+                                                   'STGblue',
+                                                   'PHGturquoise',
+                                                   'IFGturquoise',
+                                                   'TCXturquoise',
+                                                   'FPturquoise',
+                                                   'IFGbrown',
+                                                   'STGbrown',
+                                                   'DLPFCyellow',
+                                                   'TCXgreen',
+                                                   'FPyellow',
+                                                   'CBEyellow',
+                                                   'PHGbrown',
+                                                   'DLPFCbrown',
+                                                   'STGyellow',
+                                                   'PHGgreen',
+                                                   'CBEbrown',
+                                                   'TCXyellow',
+                                                   'IFGblue',
+                                                   'FPblue',
+                                                   'FPbrown',
+                                                   'CBEblue',
+                                                   'DLPFCturquoise',
+                                                   'TCXbrown',
+                                                   'STGturquoise',
+                                                   'PHGblue')))
+
+ 
+
+g <- ggplot2::ggplot(dummyDf,
+                     ggplot2::aes(x = Module,
+                                  y = category,
+                                  size = fisherOR,
+                                  color = Cluster))
+g <- g + ggplot2::geom_count()
+#g <- g + ggplot2::scale_y_log10()
+
+#g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+#g <- g + ggplot2::theme(axis.text.x=ggplot2::element_blank(),
+#        axis.ticks.x=ggplot2::element_blank())
+#g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1), breaks = c(1.5, 3,8,20,50,110),trans='log')
+#g <- g + ggplot2::coord_flip()
+#g <- g + ggplot2::ggtitle('Enrichment for Cell Type Specific Signatures')
+g <- g + ggplot2::labs(y = 'Zhang et al. Module',
+                       x = 'AD Coexpression Module')
+g <- g + AMPAD::cowplot_rotated(11)
+
+g
+ggplot2::ggsave('zhanggaiteri.tiff',device='tiff',units='mm',width=85,height=85,scale=1.8)
+#ggplot2::ggsave('cell_enrichments.png')
+```
+
+
+
+```{r}
+modMeta <- AMPAD::getModuleMetainfo('syn11932957')
+dummyDf <- targetedEnrichment$mssm2
+dummyDf <- dplyr::filter(dummyDf,!(category == 'Yellow' | category == 'Pink' | category == 'Gray.1' | category == 'Seashell' | category == 'Red.3' | category == 'Green.yellow' | category == 'Red' | category == 'Gold.2' | category == 'Tan' | category == 'Gold.3' | category == 'Light.yellow' | category == 'Brown.2' | category == 'Dark.cyan' | category == 'Khaki' | category == 'Grey.60' | category == 'Purple' | category == 'Green.4' | category == 'Honey.dew' | category == 'Red.2' | category == 'Beige'))
+dummyDf$fisherOR[dummyDf$adj.pval>=0.05] <- NA
+#dummyDf <- dplyr::filter(targetedEnrichment$cell,adj.pval<=0.05)
+dummyDf <- dplyr::left_join(dummyDf,modMeta)
+# dummyDf$category <- gsub('Zhang\\.','',dummyDf$category)
+# dummyDf$category <- factor(dummyDf$category,levels = rev(c('Astrocyte',
+#                                                        'Endothelial',
+#                                                        'Microglia',
+#                                                        'Neuron',
+#                                                        'MyelinOligos',
+#                                                        'NewOligos',
+#                                                        'OPC')))
+#dummyDf$ModuleBrainRegion <- factor(dummyDf$ModuleBrainRegion,levels = unique(dummyDf$ModuleBrainRegion))
+customDf <- data.frame(moduleName=c('TCXblue',
+                                      'IFGyellow',
+                                      'PHGyellow',
+                                      'DLPFCblue',
+                                      'CBEturquoise',
+                                      'STGblue',
+                                      'PHGturquoise',
+                                      'IFGturquoise',
+                                      'TCXturquoise',
+                                      'FPturquoise',
+                                      'IFGbrown',
+                                      'STGbrown',
+                                      'DLPFCyellow',
+                                      'TCXgreen',
+                                      'FPyellow',
+                                      'CBEyellow',
+                                      'PHGbrown',
+                                      'DLPFCbrown',
+                                      'STGyellow',
+                                      'PHGgreen',
+                                      'CBEbrown',
+                                      'TCXyellow',
+                                      'IFGblue',
+                                      'FPblue',
+                                      'FPbrown',
+                                      'CBEblue',
+                                      'DLPFCturquoise',
+                                      'TCXbrown',
+                                      'STGturquoise',
+                                      'PHGblue'),
+                         Cluster= c(rep('Consensus Cluster A',3),
+                                       rep('Consensus Cluster B',7),
+                                       rep('Consensus Cluster C',7),
+                                       rep('Consensus Cluster D',7),
+                                       rep('Consensus Cluster E',6)),
+                         stringsAsFactors=F)
+ dummyDf <- dplyr::left_join(dummyDf,customDf,by=c('Module'='moduleName'))
+ dummyDf$Cluster <- factor(dummyDf$Cluster,levels = (c('Consensus Cluster A',
+                                                      'Consensus Cluster B',
+                                                      'Consensus Cluster C',
+                                                      'Consensus Cluster D',
+                                                      'Consensus Cluster E')))
+dummyDf$Module <- factor(dummyDf$Module,levels = (c('TCXblue',
+                                                   'IFGyellow',
+                                                   'PHGyellow',
+                                                   'DLPFCblue',
+                                                   'CBEturquoise',
+                                                   'STGblue',
+                                                   'PHGturquoise',
+                                                   'IFGturquoise',
+                                                   'TCXturquoise',
+                                                   'FPturquoise',
+                                                   'IFGbrown',
+                                                   'STGbrown',
+                                                   'DLPFCyellow',
+                                                   'TCXgreen',
+                                                   'FPyellow',
+                                                   'CBEyellow',
+                                                   'PHGbrown',
+                                                   'DLPFCbrown',
+                                                   'STGyellow',
+                                                   'PHGgreen',
+                                                   'CBEbrown',
+                                                   'TCXyellow',
+                                                   'IFGblue',
+                                                   'FPblue',
+                                                   'FPbrown',
+                                                   'CBEblue',
+                                                   'DLPFCturquoise',
+                                                   'TCXbrown',
+                                                   'STGturquoise',
+                                                   'PHGblue')))
+
+ 
+
+g <- ggplot2::ggplot(dummyDf,
+                     ggplot2::aes(x = Module,
+                                  y = category,
+                                  size = fisherOR,
+                                  color = Cluster))
+g <- g + ggplot2::geom_count()
+#g <- g + ggplot2::scale_y_log10()
+
+g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+#g <- g + ggplot2::theme(axis.text.x=ggplot2::element_blank(),
+#        axis.ticks.x=ggplot2::element_blank())
+#g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1), breaks = c(1.5, 3,8,20,50,110),trans='log')
+#g <- g + ggplot2::coord_flip()
+#g <- g + ggplot2::ggtitle('Enrichment for Cell Type Specific Signatures')
+g <- g + ggplot2::labs(y = 'Zhang et al. Module',
+                       x = 'AD Coexpression Module')
+
+g
+ggplot2::ggsave('mathys.tiff',device='tiff',units='mm',width=85,height=85,scale=1.8)
+#ggplot2::ggsave('cell_enrichments.png')
+```
+
+
+
+mitochondria
+```{r}
+modMeta <- AMPAD::getModuleMetainfo('syn11932957')
+dummyDf <- targetedEnrichment$mito
+dummyDf$fisherOR[dummyDf$adj.pval>=0.05] <- NA
+#dummyDf <- dplyr::filter(targetedEnrichment$cell,adj.pval<=0.05)
+dummyDf <- dplyr::left_join(dummyDf,modMeta)
+
+strFxn <- function(x){
+  nc <- nchar(x)
+  if(nc<50){
+  ind1<-floor(nc/2)
+  str1 <- substr(x,1,ind1)
+  str2 <- substr(x,ind1+1,nc)
+  return(paste0(str1,'\n',str2))
+  }else{
+    ind1<-floor(nc/3)
+    ind2 <- 2*ind1
+    str1 <- substr(x,1,ind1)
+    str2 <- substr(x,ind1+1,ind2)
+    str3 <- substr(x,ind2+1,nc)
+    return(paste0(str1,'\n',str2,'\n',str3))
+  }
+  
+}
+
+dummyDf$category <- sapply(dummyDf$category,strFxn)
+
+#dummyDf$category <- gsub('Zhang\\.','',dummyDf$category)
+#dummyDf$category <- factor(dummyDf$category,levels = rev(c('Astrocyte',
+#                                                       'Endothelial',
+#                                                       'Microglia',
+#                                                       'Neuron',
+#                                                       'MyelinOligos',
+#                                                       'NewOligos',
+#                                                       'OPC')))
+#dummyDf$ModuleBrainRegion <- factor(dummyDf$ModuleBrainRegion,levels = unique(dummyDf$ModuleBrainRegion))
+customDf <- data.frame(moduleName=c('TCXblue',
+                                      'IFGyellow',
+                                      'PHGyellow',
+                                      'DLPFCblue',
+                                      'CBEturquoise',
+                                      'STGblue',
+                                      'PHGturquoise',
+                                      'IFGturquoise',
+                                      'TCXturquoise',
+                                      'FPturquoise',
+                                      'IFGbrown',
+                                      'STGbrown',
+                                      'DLPFCyellow',
+                                      'TCXgreen',
+                                      'FPyellow',
+                                      'CBEyellow',
+                                      'PHGbrown',
+                                      'DLPFCbrown',
+                                      'STGyellow',
+                                      'PHGgreen',
+                                      'CBEbrown',
+                                      'TCXyellow',
+                                      'IFGblue',
+                                      'FPblue',
+                                      'FPbrown',
+                                      'CBEblue',
+                                      'DLPFCturquoise',
+                                      'TCXbrown',
+                                      'STGturquoise',
+                                      'PHGblue'),
+                         Cluster= c(rep('Consensus Cluster A',3),
+                                       rep('Consensus Cluster B',7),
+                                       rep('Consensus Cluster C',7),
+                                       rep('Consensus Cluster D',7),
+                                       rep('Consensus Cluster E',6)),
+                         stringsAsFactors=F)
+ dummyDf <- dplyr::left_join(dummyDf,customDf,by=c('Module'='moduleName'))
+ dummyDf$Cluster <- factor(dummyDf$Cluster,levels = (c('Consensus Cluster A',
+                                                      'Consensus Cluster B',
+                                                      'Consensus Cluster C',
+                                                      'Consensus Cluster D',
+                                                      'Consensus Cluster E')))
+dummyDf$Module <- factor(dummyDf$Module,levels = rev(c('TCXblue',
+                                                   'IFGyellow',
+                                                   'PHGyellow',
+                                                   'DLPFCblue',
+                                                   'CBEturquoise',
+                                                   'STGblue',
+                                                   'PHGturquoise',
+                                                   'IFGturquoise',
+                                                   'TCXturquoise',
+                                                   'FPturquoise',
+                                                   'IFGbrown',
+                                                   'STGbrown',
+                                                   'DLPFCyellow',
+                                                   'TCXgreen',
+                                                   'FPyellow',
+                                                   'CBEyellow',
+                                                   'PHGbrown',
+                                                   'DLPFCbrown',
+                                                   'STGyellow',
+                                                   'PHGgreen',
+                                                   'CBEbrown',
+                                                   'TCXyellow',
+                                                   'IFGblue',
+                                                   'FPblue',
+                                                   'FPbrown',
+                                                   'CBEblue',
+                                                   'DLPFCturquoise',
+                                                   'TCXbrown',
+                                                   'STGturquoise',
+                                                   'PHGblue')))
+
+ 
+
+g <- ggplot2::ggplot(dummyDf,
+                     ggplot2::aes(x = Module,
+                                  y = category,
+                                  size = fisherOR,
+                                  color = Cluster))
+g <- g + ggplot2::geom_count()
+#g <- g + ggplot2::scale_y_log10()
+
+g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+#g <- g + ggplot2::theme(axis.text.x=ggplot2::element_blank(),
+#        axis.ticks.x=ggplot2::element_blank())
+#g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1), breaks = c(1.5, 3,8,20,50,110),trans='log')
+g <- g + ggplot2::coord_flip()
+#g <- g + ggplot2::ggtitle('Enrichment for Cell Type Specific Signatures')
+g <- g + ggplot2::labs(y = 'Mitochondrial signatures',
+                       x = 'AD Coexpression Module')
+
+g
+```
+
+
+
+
+overlap table with amp-ad related gene sets
+```{r}
+dummyDf <- targetedEnrichment$ad
+dummyDf$fisherOR[dummyDf$adj.pval>=0.05] <- NA
+dummyDf <- dplyr::left_join(dummyDf,modMeta)
+dummyDf <- dplyr::filter(dummyDf,adj.pval<=0.05)
+dummyDf <- dplyr::filter(dummyDf,category == 'Nominated_targets' |
+                           category == 'MSSM' | 
+                           category == 'Mayo_simple' | 
+                           category == 'Mayo_comprehensive' | 
+                           category == 'Emory' | 
+                           category == 'Columbia_Broad_Rush_m109')
+dummyDf <- dplyr::select(dummyDf,
+                         Module,
+                         category,
+                         mod_size,
+                         category_size,
+                         nInter,
+                         adj.pval,
+                         fisherOR)
+
+colnames(dummyDf) <- c('Module Name',
+                       'AMP-AD Gene Set',
+                       'Module Size',
+                       'AMP-AD Gene Set Size',
+                       'Size of Intersection',
+                       'Adjusted P-value',
+                       'FET Odds Ratio')
+write.csv(dummyDf,file='amp-ad_overlap_stats.csv',quote=F,row.names=F)
+```
+differential expression meta analysis summary tables
+```{r}
+dummyDf <- targetedEnrichment$degMetaFull
+dummyDf$fisherOR[dummyDf$adj.pval>=0.05] <- NA
+dummyDf <- dplyr::left_join(dummyDf,modMeta)
+dummyDf <- dplyr::filter(dummyDf,adj.pval<=0.05)
+dummyDf$Module[is.na(dummyDf$Module)] <- dummyDf$ModuleNameFull[is.na(dummyDf$Module)]
+dummyDf <- dplyr::select(dummyDf,
+                         Module,
+                         category,
+                         mod_size,
+                         category_size,
+                         nInter,
+                         adj.pval,
+                         fisherOR)
+colnames(dummyDf) <- c('Module or Gene Set Name',
+                       'DEG Gene Set',
+                       'Module or Gene Set Size',
+                       'DEG Gene Set Size',
+                       'Size of Intersection',
+                       'Adjusted P-value',
+                       'FET Odds Ratio')
+dummyDf <- dplyr::arrange(dummyDf,desc(`FET Odds Ratio`))
+adUp <- dplyr::filter(dummyDf,`DEG Gene Set` == 'ad.control.random.UP')
+adDown <- dplyr::filter(dummyDf,`DEG Gene Set` == 'ad.control.random.DOWN')
+adUpMale <- dplyr::filter(dummyDf,`DEG Gene Set` == 'ad.control.MALE.random.UP')
+adDownMale <- dplyr::filter(dummyDf,`DEG Gene Set` == 'ad.control.MALE.random.DOWN')
+adUpFemale <- dplyr::filter(dummyDf,`DEG Gene Set` == 'ad.control.FEMALE.random.UP')
+adDownFemale <- dplyr::filter(dummyDf,`DEG Gene Set` == 'ad.control.FEMALE.random.DOWN')
+
+write.csv(adUp,file='adup.csv',quote=F,row.names=F)
+write.csv(adDown,file='adDown.csv',quote=F,row.names=F)
+write.csv(adUpMale,file='adUpMale.csv',quote=F,row.names=F)
+write.csv(adDownMale,file='adDownMale.csv',quote=F,row.names=F)
+write.csv(adUpFemale,file='adUpFemale.csv',quote=F,row.names=F)
+write.csv(adDownFemale,file='adDownFemale.csv',quote=F,row.names=F)
+
+#View(dplyr::filter(dummyDf,category == 'ad.control.FEMALE.random.UP'))
+```
+
+
+AD genetics summary
+```{r}
+dummyDf <- targetedEnrichment$ad
+dummyDf$fisherOR[dummyDf$adj.pval>=0.05] <- NA
+dummyDf <- dplyr::left_join(dummyDf,modMeta)
+#dummyDf$ModuleBrainRegion <- factor(dummyDf$ModuleBrainRegion,levels = unique(dummyDf$ModuleBrainRegion))
+dummyDf$category <- factor(dummyDf$category,
+                           levels = rev(c('genecards',
+                                       'pantherPresenilin',
+                                       'dbgap',
+                                       'igap',
+                                       'jensenDisease',
+                                       'omimExpanded',
+                                       'biocarta',
+                                       'wikipathwaysMouse',
+                                       'wikipathwaysHuman',
+                                       'pantherAmyloid',
+                                       'kegg',                                       
+                                       'omim',
+                                       'Nominated_targets',
+                                       'MSSM',
+                                       'Mayo_simple',
+                                       'Mayo_comprehensive',
+                                       'Emory',
+                                       'Columbia_Broad_Rush_m109')))
+
+ dummyDf <- dplyr::left_join(dummyDf,customDf,by=c('Module'='moduleName'))
+dummyDf$Cluster <- factor(dummyDf$Cluster,levels = (c('Consensus Cluster A',
+                                                      'Consensus Cluster B',
+                                                      'Consensus Cluster C',
+                                                      'Consensus Cluster D',
+                                                      'Consensus Cluster E')))
+
+dummyDf$Module <- factor(dummyDf$Module,levels = (c('TCXblue',
+                                                   'IFGyellow',
+                                                   'PHGyellow',
+                                                   'DLPFCblue',
+                                                   'CBEturquoise',
+                                                   'STGblue',
+                                                   'PHGturquoise',
+                                                   'IFGturquoise',
+                                                   'TCXturquoise',
+                                                   'FPturquoise',
+                                                   'IFGbrown',
+                                                   'STGbrown',
+                                                   'DLPFCyellow',
+                                                   'TCXgreen',
+                                                   'FPyellow',
+                                                   'CBEyellow',
+                                                   'PHGbrown',
+                                                   'DLPFCbrown',
+                                                   'STGyellow',
+                                                   'PHGgreen',
+                                                   'CBEbrown',
+                                                   'TCXyellow',
+                                                   'IFGblue',
+                                                   'FPblue',
+                                                   'FPbrown',
+                                                   'CBEblue',
+                                                   'DLPFCturquoise',
+                                                   'TCXbrown',
+                                                   'STGturquoise',
+                                                   'PHGblue')))
+
+
+# g <- ggplot2::ggplot(dummyDf,
+#                      ggplot2::aes(x = Module,
+#                                   y = category,
+#                                   size = fisherOR,
+#                                   color = -log10(adj.pval)))
+# g <- g+ggplot2::geom_count()
+# #g <- g + ggplot2::scale_y_log10()
+# #g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+# g <- g + ggplot2::theme(axis.text.x=ggplot2::element_blank(),
+#         axis.ticks.x=ggplot2::element_blank())
+# g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1), breaks = c(1.4,6,12,18,25))
+# #g <- g + ggplot2::coord_flip()
+# g <- g + ggplot2::ggtitle('Enrichment for AD Signatures')
+
+g <- ggplot2::ggplot(dummyDf,
+                     ggplot2::aes(x = Module,
+                                  y = category,
+                                  size = fisherOR,
+                                  color = Cluster))
+g <- g + ggplot2::geom_count()
+
+#g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+
+g <- g + ggplot2::labs(y = 'AD Signature',
+                       x = 'AD Coexpression Module')
+
+g <- g + AMPAD::cowplot_rotated(9)
+g
+ggplot2::ggsave('figure2C.tiff',device='tiff',units='mm',width=85,height=85,scale=1.8)
+#ggplot2::ggsave('ad_signature_enrichments.png')
+```
+
+
+
+```{r}
+dummyDf <- targetedEnrichment$ad
+dummyDf$fisherOR[dummyDf$adj.pval>=0.05] <- NA
+dummyDf <- dplyr::left_join(dummyDf,modMeta)
+dummyDf<- dplyr::filter(dummyDf,category == 'AMP.AD.Nominated.Targets' |
+                                    category == 'AMP.AD.McKenzie.et.al..2017.Red' |
+                                    category == 'AMP.AD.McKenzie.et.al..2017.Light.green' |
+                                    category == 'AMP.AD.McKenzie.et.al..2017.Green' |
+                                    category == 'AMP.AD.Allen.et.al..2018.AD.PSP.TCX40.CS' |
+                                    category == 'AMP.AD.Allen.et.al..2018.AD.PSP.TCX10.CS' | 
+                                    category == 'AMP.AD.Johnson.et.al..2018.RNA.Binding' | 
+                                    category == 'AMP.AD.Mostafavi.et.al..2018.m109')
+dummyDf$category[dummyDf$category=='AMP.AD.Nominated.Targets'] = 'Nominated\nTargets'
+dummyDf$category[dummyDf$category=='AMP.AD.McKenzie.et.al..2017.Red'] = 'MSSM Oligo\nRed'
+dummyDf$category[dummyDf$category=='AMP.AD.McKenzie.et.al..2017.Light.green'] = 'MSSM Oligo\nLight green'
+dummyDf$category[dummyDf$category=='AMP.AD.McKenzie.et.al..2017.Green'] = 'MSSM Oligo\nGreen'
+dummyDf$category[dummyDf$category=='AMP.AD.Allen.et.al..2018.AD.PSP.TCX40.CS'] = 'Mayo Oligo\nAD.PSP.TCX40.CS'
+dummyDf$category[dummyDf$category=='AMP.AD.Allen.et.al..2018.AD.PSP.TCX10.CS'] = 'Mayo Oligo\nAD.PSP.TCX10.CS'
+dummyDf$category[dummyDf$category=='AMP.AD.Johnson.et.al..2018.RNA.Binding'] = 'Emory\nRNA binding'
+dummyDf$category[dummyDf$category=='AMP.AD.Mostafavi.et.al..2018.m109'] = 'Rush m109'
+
+
+
+#dummyDf$ModuleBrainRegion <- factor(dummyDf$ModuleBrainRegion,levels = unique(dummyDf$ModuleBrainRegion))
+dummyDf$category <- factor(dummyDf$category,
+                           levels = (c('Nominated\nTargets',
+                                       'MSSM Oligo\nRed',
+                                       'MSSM Oligo\nLight green',
+                                       'MSSM Oligo\nGreen',
+                                       'Mayo Oligo\nAD.PSP.TCX40.CS',
+                                       'Mayo Oligo\nAD.PSP.TCX10.CS',
+                                       'Emory\nRNA binding',
+                                       'Rush m109')))
+
+ dummyDf <- dplyr::left_join(dummyDf,customDf,by=c('Module'='moduleName'))
+dummyDf$Cluster <- factor(dummyDf$Cluster,levels = (c('Astrocytic',
+                                                      'Microglial',
+                                                      'Neuronal',
+                                                      'Oligodendroglial',
+                                                      'Proteostasis')))
+
+dummyDf$Module <- factor(dummyDf$Module,levels = rev(c('TCXblue',
+                                                   'IFGyellow',
+                                                   'PHGyellow',
+                                                   'DLPFCblue',
+                                                   'CBEturquoise',
+                                                   'STGblue',
+                                                   'PHGturquoise',
+                                                   'IFGturquoise',
+                                                   'TCXturquoise',
+                                                   'FPturquoise',
+                                                   'IFGbrown',
+                                                   'STGbrown',
+                                                   'DLPFCyellow',
+                                                   'TCXgreen',
+                                                   'FPyellow',
+                                                   'CBEyellow',
+                                                   'PHGbrown',
+                                                   'DLPFCbrown',
+                                                   'STGyellow',
+                                                   'PHGgreen',
+                                                   'CBEbrown',
+                                                   'TCXyellow',
+                                                   'IFGblue',
+                                                   'FPblue',
+                                                   'FPbrown',
+                                                   'CBEblue',
+                                                   'DLPFCturquoise',
+                                                   'TCXbrown',
+                                                   'STGturquoise',
+                                                   'PHGblue')))
+
+
+# g <- ggplot2::ggplot(dummyDf,
+#                      ggplot2::aes(x = Module,
+#                                   y = category,
+#                                   size = fisherOR,
+#                                   color = -log10(adj.pval)))
+# g <- g+ggplot2::geom_count()
+# #g <- g + ggplot2::scale_y_log10()
+# #g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+# g <- g + ggplot2::theme(axis.text.x=ggplot2::element_blank(),
+#         axis.ticks.x=ggplot2::element_blank())
+# g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1), breaks = c(1.4,6,12,18,25))
+# #g <- g + ggplot2::coord_flip()
+# g <- g + ggplot2::ggtitle('Enrichment for AD Signatures')
+
+g <- ggplot2::ggplot(dummyDf,
+                     ggplot2::aes(x = Module,
+                                  y = category,
+                                  size = fisherOR,
+                                  color = Cluster))
+g <- g + ggplot2::geom_count()
+
+g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+
+g <- g + ggplot2::coord_flip()
+
+g <- g + ggplot2::labs(y = 'AD Signature',
+                       x = 'AD Coexpression Module')
+g
+#ggplot2::ggsave('figure2C.tiff',device='tiff',units='mm',width=85,height=85,scale=1.8)
+ggplot2::ggsave('amp_ad_new_modules.png',units='in',width=4.91,height=4.8,scale=1.4)
+```
+
+
+```{r}
+dummyDf <- dplyr::filter(targetedEnrichment$degMeta,adj.pval<=0.05)
+dummyDf <- dplyr::filter(dummyDf,category == 'ad.control.FEMALE.random.DOWN' |
+                           category == 'ad.control.FEMALE.random.UP' | 
+                           category == 'ad.control.MALE.random.DOWN' | 
+                           category == 'ad.control.MALE.random.UP')
+dummyDf$adj.pval[dummyDf$adj.pval==0] = 10^-300
+dummyDf$category <- gsub('ad\\.control\\.FEMALE\\.random\\.DOWN','Female, Down',dummyDf$category)
+dummyDf$category <- gsub('ad\\.control\\.MALE\\.random\\.DOWN','Male, Down',dummyDf$category)
+dummyDf$category <- gsub('ad\\.control\\.FEMALE\\.random\\.UP','Female, Up',dummyDf$category)
+dummyDf$category <- gsub('ad\\.control\\.MALE\\.random\\.UP','Male, Up',dummyDf$category)
+dummyDf <- dplyr::left_join(dummyDf,modMeta)
+#dummyDf$ModuleBrainRegion <- factor(dummyDf$ModuleBrainRegion,levels = unique(dummyDf$ModuleBrainRegion))
+ dummyDf <- dplyr::left_join(dummyDf,customDf,by=c('Module'='moduleName'))
+dummyDf$Cluster <- factor(dummyDf$Cluster,levels = (c('Consensus Cluster A',
+                                                      'Consensus Cluster B',
+                                                      'Consensus Cluster C',
+                                                      'Consensus Cluster D',
+                                                      'Consensus Cluster E')))
+dummyDf$category <- factor(dummyDf$category,rev(c('Female, Up',
+                                                  'Male, Up',
+                                                  'Female, Down',
+                                                  'Male, Down')))
+dummyDf$Module <- factor(dummyDf$Module,levels = (c('TCXblue',
+                                                   'IFGyellow',
+                                                   'PHGyellow',
+                                                   'DLPFCblue',
+                                                   'CBEturquoise',
+                                                   'STGblue',
+                                                   'PHGturquoise',
+                                                   'IFGturquoise',
+                                                   'TCXturquoise',
+                                                   'FPturquoise',
+                                                   'IFGbrown',
+                                                   'STGbrown',
+                                                   'DLPFCyellow',
+                                                   'TCXgreen',
+                                                   'FPyellow',
+                                                   'CBEyellow',
+                                                   'PHGbrown',
+                                                   'DLPFCbrown',
+                                                   'STGyellow',
+                                                   'PHGgreen',
+                                                   'CBEbrown',
+                                                   'TCXyellow',
+                                                   'IFGblue',
+                                                   'FPblue',
+                                                   'FPbrown',
+                                                   'CBEblue',
+                                                   'DLPFCturquoise',
+                                                   'TCXbrown',
+                                                   'STGturquoise',
+                                                   'PHGblue')))
+
+# g <- ggplot2::ggplot(dummyDf,
+#                      ggplot2::aes(x = Module,
+#                                   y = category,
+#                                   size = fisherOR,
+#                                   color = -log10(adj.pval)))
+# g <- g+ggplot2::geom_count()
+# #g <- g + ggplot2::scale_y_log10()
+# #g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+# g <- g + ggplot2::theme(axis.text.x=ggplot2::element_blank(),
+#         axis.ticks.x=ggplot2::element_blank())
+# g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1), breaks = c(1.5, 3,8,20,50,110,300),trans='log')
+# #g <- g + ggplot2::coord_flip()
+# g <- g + ggplot2::ggtitle('Enrichment for AD DEG Signatures')
+
+g <- ggplot2::ggplot(dummyDf,
+                     ggplot2::aes(x = Module,
+                                  y = category,
+                                  size = fisherOR,
+                                  color = Cluster))
+g <- g + ggplot2::geom_count()
+
+#g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+
+g <- g + ggplot2::labs(y = 'DEG Sex Specific Meta Analysis',
+                       x = 'AD Coexpression Module')
+
+g <- g + AMPAD::cowplot_rotated(11)
+g
+ggplot2::ggsave('figure2D.tiff',device='tiff',units='mm',width=85,height=85,scale=1.8)
+#ggplot2::ggsave('deg_signature_enrichments.png')
+```
+
+```{r}
+#modMeta <- AMPAD::getModuleMetainfo('syn11932957')
+dummyDf <- dplyr::filter(targetedEnrichment$targetPathways,adj.pval<=0.05)
+dummyDf <- dplyr::left_join(dummyDf,modMeta)
+dummyDf$ModuleBrainRegion <- factor(dummyDf$ModuleBrainRegion,levels = unique(dummyDf$ModuleBrainRegion))
+
+g <- ggplot2::ggplot(dummyDf,
+                     ggplot2::aes(x = Module,
+                                  y = category,
+                                  size = fisherOR,
+                                  color = -log10(adj.pval)))
+g <- g + ggplot2::geom_count()
+#g <- g + ggplot2::scale_y_log10()
+g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+g <- g + ggplot2::scale_color_gradientn(colours = c(viridis::viridis(2)[2], viridis::viridis(2)[1]),values = c(0,1))
+g <- g + ggplot2::coord_flip()
+
+g
+
+```
+
+
+
+Reformate DEG results for visualization
+
+```{r}
+tcx_keep <- intersect(grep('TCX',targetedEnrichment$deg$ModuleNameFull),
+                      grep('TCX',targetedEnrichment$deg$category))
+phg_keep <- intersect(grep('PHG',targetedEnrichment$deg$ModuleNameFull),
+                      grep('PHG',targetedEnrichment$deg$category))
+cbe_keep <- intersect(grep('CBE',targetedEnrichment$deg$ModuleNameFull),
+                      grep('CBE',targetedEnrichment$deg$category))
+dlpfc_keep <- intersect(grep('DLPFC',targetedEnrichment$deg$ModuleNameFull),
+                      grep('DLPFC',targetedEnrichment$deg$category))
+stg_keep <- intersect(grep('STG',targetedEnrichment$deg$ModuleNameFull),
+                      grep('STG',targetedEnrichment$deg$category))
+ifg_keep <- intersect(grep('IFG',targetedEnrichment$deg$ModuleNameFull),
+                      grep('IFG',targetedEnrichment$deg$category))
+fp_keep <- intersect(grep('FP',targetedEnrichment$deg$ModuleNameFull),
+                      grep('FP',targetedEnrichment$deg$category))
+deg <- targetedEnrichment$deg[c(tcx_keep,phg_keep,cbe_keep,dlpfc_keep,stg_keep,ifg_keep,fp_keep),]
+deg$adj.pval <- p.adjust(deg$fisherPval,method='fdr')
+deg <- dplyr::filter(deg,adj.pval<=0.05)
+dumfun <- function(x){
+  y<-grep('UP',x)
+  y2 <- grep('DOWN',x)
+  z <- x
+  z[y] <- 'Up'
+  z[y2] <- 'Down'
+  return(z)
+}
+sexfun <- function(x){
+  y<-grep('\\.FEMALE',x)
+  y2 <- grep('\\.MALE',x)
+  z <- rep('All',length(x))
+  z[y] <- 'Female'
+  z[y2] <- 'Male'
+  return(z)
+}
+deg <- dplyr::mutate(deg,direction = dumfun(category))
+deg <- dplyr::mutate(deg,sex = sexfun(category))
+deg <- dplyr::mutate(deg,dirbysex = paste0(direction,'.',sex))
+deg <- dplyr::left_join(deg,modMeta)
+```
+Plot DEG results
+
+```{r}
+g <- ggplot2::ggplot(deg,ggplot2::aes(x = Module,
+                                      y = fisherOR,
+                                      fill = direction))
+g <- g + ggplot2::geom_col(position = 'dodge')
+g <- g + ggplot2::facet_grid(. ~ sex)
+g <- g + ggplot2::scale_y_log10()
+g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+g <- g + ggplot2::coord_flip()
+
+g
+
+```
+
+
+```{r}
+degMeta <- targetedEnrichment$degMeta
+degMeta$adj.pval <- p.adjust(degMeta$fisherPval,method='fdr')
+degMeta <- dplyr::filter(degMeta,adj.pval<=0.05)
+dumfun <- function(x){
+  y<-grep('UP',x)
+  y2 <- grep('DOWN',x)
+  z <- x
+  z[y] <- 'Up'
+  z[y2] <- 'Down'
+  return(z)
+}
+sexfun <- function(x){
+  y<-grep('\\.FEMALE',x)
+  y2 <- grep('\\.MALE',x)
+  z <- rep('All',length(x))
+  z[y] <- 'Female'
+  z[y2] <- 'Male'
+  return(z)
+}
+degMeta <- dplyr::mutate(degMeta,direction = dumfun(category))
+degMeta <- dplyr::mutate(degMeta,sex = sexfun(category))
+degMeta <- dplyr::mutate(degMeta,dirbysex = paste0(direction,'.',sex))
+degMeta <- dplyr::left_join(degMeta,modMeta)
+```
+```{r}
+ind <- grep('fixed',degMeta$category)
+g <- ggplot2::ggplot(degMeta[ind,],ggplot2::aes(x = Module,
+                                      y = fisherOR,
+                                      fill = category))
+g <- g + ggplot2::geom_col(position = 'dodge')
+g <- g + ggplot2::facet_grid(. ~ sex)
+g <- g + ggplot2::scale_y_log10()
+g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+g <- g + ggplot2::coord_flip()
+
+g
+
+```
+
+
+Overlap plot
+
+```{r}
+AMPAD::pairwiseMatrixOfEnrichments('syn11932957')
+
+```
+Make PC statistics
+
+```{r}
+AMPAD::makePcStatistics('March 2 2018')
+```
+
+Run pathway enrichments and push to synapse
+
+
+```{r}
+pathwayGeneSets <- AMPAD::collatePathways()
+fullPathwayEnrichmentsList <- mapply(AMPAD::run_amp_ad_enrichment,
+                                 pathwayGeneSets,
+                                 names(pathwayGeneSets),
+                                 MoreArgs = list(hgnc = TRUE,
+                                                 manifestId = 'syn11932957'),
+                                 SIMPLIFY = FALSE)
+fullPathwayEnrichments <- do.call(rbind,fullPathwayEnrichmentsList)
+rSynapseUtilities::makeTable(fullPathwayEnrichments,
+                             "Aggregate Module Pathway Enrichments March 7 2018",
+                             'syn2370594')
+```
+
+
+Diagnose DEG differences
+```{r}
+load(synapseClient::synGet('syn10496554',version = 10)@filePath)
+amp.ad.de.geneSetsNew <- amp.ad.de.geneSets
+load(synapseClient::synGet('syn10496554',version = 9)@filePath)
+setdiff(amp.ad.de.geneSetsNew$`Diagnosis.Sex.DLPFC.AD-CONTROL.MALE.DOWN`,amp.ad.de.geneSets$`Diagnosis.Sex.DLPFC.AD-CONTROL.MALE.DOWN`)
+
+
+```
+
+
+look at glymphatic flow in tcx vs cbe
+```{r}
+foobar <- AMPAD::pullExpressionAndPhenoWinsorized()
+cbe_diag <- foobar$mayoCER$logitDiagnosis
+redCBEMatrix <- foobar$mayoCER[,colnames(foobar$mayoCER)%in%targetedGeneSets$targetedPathways$WP1877]
+ab <- svd(scale(redCBEMatrix))
+plot(as.factor(cbe_diag),ab$u[,2])
+summary(lm(ab$u[,3] ~ cbe_diag))
+pheatmap::pheatmap(cbind(cbe_diag,redCBEMatrix))
+
+tcx_diag <- foobar$mayoTCX$logitDiagnosis
+redTCXMatrix <- foobar$mayoTCX[,colnames(foobar$mayoTCX)%in%targetedGeneSets$targetedPathways$WP1877]
+ab2 <- svd(scale(redTCXMatrix))
+plot(as.factor(tcx_diag),ab2$u[,1])
+summary(lm(ab2$u[,3] ~ tcx_diag))
+pheatmap::pheatmap(cbind(tcx_diag,redTCXMatrix))
+
+```
+
+
+
+summarize pathway enrichments for neuronal modules down in women
+```{r}
+neuron <- list()
+neuron$cbeyellow <- AMPAD::summarizeModulesNew('aggregateCBEyellowCBE')
+neuron$dlpfcyellow <- AMPAD::summarizeModulesNew('aggregateDLPFCyellowDLPFC')
+neuron$ifgbrown <- AMPAD::summarizeModulesNew('aggregateIFGbrownIFG')
+neuron$phgbrown <- AMPAD::summarizeModulesNew('aggregatePHGbrownPHG')
+neuron$stgbrown <- AMPAD::summarizeModulesNew('aggregateSTGbrownSTG')
+neuron$tcxgreen <- AMPAD::summarizeModulesNew('aggregateTCXgreenTCX')
+neuron$fpyellow <- AMPAD::summarizeModulesNew('aggregateFPyellowFP')
+
+neuron2 <- do.call(rbind,neuron)
+
+```
+
+group by and summarize fisher odd's ratios across the 7 tissue types
+
+```{r}
+neuron3 <- neuron2
+neuron3$fisherOR[neuron3$fisherOR==Inf] <- 55
+foobar2 <- dplyr::group_by(neuron3,category)
+foobar3 <- dplyr::summarise(foobar2,nObserved = length(ModuleNameFull),meanOR = mean(fisherOR))
+
+
+```
+
+
+summarize neuroinfllmatory modules
+```{r}
+
+infl <- list()
+infl$tcxblue <- AMPAD::summarizeModulesNew('aggregateTCXblueTCX')
+infl$ifgyellow <- AMPAD::summarizeModulesNew('aggregateIFGyellowIFG')
+infl$phgyellow <- AMPAD::summarizeModulesNew('aggregatePHGyellowPHG')
+infl$dlpfcblue<- AMPAD::summarizeModulesNew('aggregateDLPFCblueDLPFC')
+infl$cbeturquoise <- AMPAD::summarizeModulesNew('aggregateCBEturquoiseCBE')
+infl$stgblue<- AMPAD::summarizeModulesNew('aggregateSTGblueSTG')
+infl$phgturquoise <- AMPAD::summarizeModulesNew('aggregatePHGturquoisePHG')
+infl$ifgturquoise <- AMPAD::summarizeModulesNew('aggregateIFGturquoiseIFG')
+infl$tcxturquoise <- AMPAD::summarizeModulesNew('aggregateTCXturquoiseTCX')
+
+infl2 <- do.call(rbind,infl)
+infl3 <- infl2
+infl3$fisherOR[infl3$fisherOR==Inf] <- 55
+foobar2 <- dplyr::group_by(infl3,category)
+foobar3 <- dplyr::summarise(foobar2,nObserved = length(ModuleNameFull),meanOR = mean(fisherOR))
+
+```
+summary oligodendrocyte pathways
+```{r}
+
+oligo <- list()
+oligo$dlpfcbrown <- AMPAD::summarizeModulesNew('aggregateDLPFCbrownDLPFC')
+oligo$stgyellow <- AMPAD::summarizeModulesNew('aggregateSTGyellowSTG')
+oligo$phggreen <- AMPAD::summarizeModulesNew('aggregatePHGgreenPHG')
+oligo$cbebrown<- AMPAD::summarizeModulesNew('aggregateCBEbrownCBE')
+oligo$tcxyellow <- AMPAD::summarizeModulesNew('aggregateTCXyellowTCX')
+oligo$ifgblue <- AMPAD::summarizeModulesNew('aggregateIFGblueIFG')
+oligo$fpblue <- AMPAD::summarizeModulesNew('aggregateFPblueFP')
+
+oligo2 <- do.call(rbind,oligo)
+oligo3 <- oligo2
+oligo3$fisherOR[oligo3$fisherOR==Inf] <- 55
+foobar2 <- dplyr::group_by(oligo3,category)
+foobar3 <- dplyr::summarise(foobar2,nObserved = length(ModuleNameFull),meanOR = mean(fisherOR))
+
+```
+Male specific modules
+
+```{r}
+proteo <- list()
+proteo$cbeblue <- AMPAD::summarizeModulesNew('aggregateCBEblueCBE')
+proteo$dlpfcturquoise <- AMPAD::summarizeModulesNew('aggregateDLPFCturquoiseDLPFC')
+proteo$tcxbrown <- AMPAD::summarizeModulesNew('aggregateTCXbrownTCX')
+proteo$stgturquoise<- AMPAD::summarizeModulesNew('aggregateSTGturquoiseSTG')
+proteo$phgblue <- AMPAD::summarizeModulesNew('aggregatePHGbluePHG')
+
+
+proteo2 <- do.call(rbind,proteo)
+proteo3 <- proteo2
+proteo3$fisherOR[proteo3$fisherOR==Inf] <- 55
+foobar2 <- dplyr::group_by(proteo3,category)
+foobar3 <- dplyr::summarise(foobar2,nObserved = length(ModuleNameFull),meanOR = mean(fisherOR))
+```
