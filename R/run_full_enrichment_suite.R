@@ -78,4 +78,5 @@ run_full_enrichment_suite <- function(){
   targetedEnrichment$targetPathways$adj.pval <- p.adjust(targetedEnrichment$targetPathways$fisherPval,method='fdr')
   targetedEnrichment$degFull$adj.pval <- p.adjust(targetedEnrichment$degFull$fisherPval,method='fdr')
   targetedEnrichment$degMetaFull$adj.pval <- p.adjust(targetedEnrichment$degMetaFull$fisherPval,method='fdr')
+  return(targetedEnrichment)
 }

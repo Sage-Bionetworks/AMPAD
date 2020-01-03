@@ -31,7 +31,7 @@ aggModsNonAdNew <- AMPAD::buildAggregateNonADModules()
 
 ```
 
-Show overlap between AD and non AD (Figure SXF)
+Show overlap between AD and non AD (Figure S2A)
 ```{r}
 AMPAD::compareADtoNonADmods(aggModsNew,
                             aggModsNonAdNew)
@@ -42,7 +42,7 @@ AMPAD::compareADtoNonADmods(aggModsNew,
 test building of gene sets
 
 ```{r}
-targetedGeneSets <- AMPAD::collateEnrichmentSets()
+targetedEnrichment <- AMPAD::run_full_enrichment_suite()
 ```
 
 Plot from Figure 1c
@@ -66,4 +66,104 @@ g<-AMPAD::make_dot_plot(dummyDf,
                  ylab='Cell Type Signature')
 g
 ```
+
+Plot from Figure S2B
+
+```{r}
+dummyDf <- targetedEnrichment$cell2
+dummyDf$fisherOR[dummyDf$adj.pval>=0.05] <- NA
+#dummyDf <- dplyr::filter(targetedEnrichment$cell,adj.pval<=0.05)
+dummyDf <- dplyr::left_join(dummyDf,modMeta)
+
+g<-AMPAD::make_dot_plot(dummyDf,
+                 xlab='AD Coexpression Module',
+                 ylab='Lake et al. Cell Type Signature')
+g
+```
+
+Plot for figure S6B
+
+```{r}
+dummyDf <- targetedEnrichment$scz
+dummyDf <- dplyr::filter(dummyDf,category == 'yellow' | category == 'red' | category == 'blue' | category == 'lightyellow' | category == 'greenyellow' | category == 'cyan' | category == 'grey60')
+dummyDf$fisherOR[dummyDf$adj.pval>=0.05] <- NA
+#dummyDf <- dplyr::filter(targetedEnrichment$cell,adj.pval<=0.05)
+dummyDf <- dplyr::left_join(dummyDf,modMeta)
+
+g<-AMPAD::make_dot_plot(dummyDf,
+                 xlab='AD Coexpression Module',
+                 ylab='CommonMind Differentially Expressed Module')
+g
+```
+
+plot from figure S6C
+
+
+```{r}
+dummyDf <- targetedEnrichment$mssm2
+dummyDf <- dplyr::filter(dummyDf,category == 'Yellow' | category == 'Pink' | category == 'Gray.1' | category == 'Seashell' | category == 'Red.3' | category == 'Green.yellow' | category == 'Red' | category == 'Gold.2' | category == 'Tan' | category == 'Gold.3' | category == 'Light.yellow' | category == 'Brown.2' | category == 'Dark.cyan' | category == 'Khaki' | category == 'Grey.60' | category == 'Purple' | category == 'Green.4' | category == 'Honey.dew' | category == 'Red.2' | category == 'Beige')
+dummyDf$fisherOR[dummyDf$adj.pval>=0.05] <- NA
+#dummyDf <- dplyr::filter(targetedEnrichment$cell,adj.pval<=0.05)
+dummyDf <- dplyr::left_join(dummyDf,modMeta)
+g<-AMPAD::make_dot_plot(dummyDf,
+                 xlab='AD Coexpression Module',
+                 ylab='Zhang et al. Module')
+g
+```
+
+Plot from figure 1D
+
+```{r}
+dummyDf <- targetedEnrichment$ad
+dummyDf$fisherOR[dummyDf$adj.pval>=0.05] <- NA
+dummyDf <- dplyr::left_join(dummyDf,modMeta)
+#dummyDf$ModuleBrainRegion <- factor(dummyDf$ModuleBrainRegion,levels = unique(dummyDf$ModuleBrainRegion))
+dummyDf$category <- factor(dummyDf$category,
+                           levels = rev(c('genecards',
+                                       'pantherPresenilin',
+                                       'dbgap',
+                                       'igap',
+                                       'jensenDisease',
+                                       'omimExpanded',
+                                       'biocarta',
+                                       'wikipathwaysMouse',
+                                       'wikipathwaysHuman',
+                                       'pantherAmyloid',
+                                       'kegg',                                       
+                                       'omim',
+                                       'Nominated_targets',
+                                       'MSSM',
+                                       'Mayo_simple',
+                                       'Mayo_comprehensive',
+                                       'Emory',
+                                       'Columbia_Broad_Rush_m109')))
+g<-AMPAD::make_dot_plot(dummyDf,
+                 xlab='AD Coexpression Module',
+                 ylab='AD Signature')
+g
+
+```
+
+plot from figure 4D
+
+```{r}
+dummyDf <- dplyr::filter(targetedEnrichment$degMeta,adj.pval<=0.05)
+dummyDf <- dplyr::filter(dummyDf,category == 'ad.control.FEMALE.random.DOWN' |
+                           category == 'ad.control.FEMALE.random.UP' | 
+                           category == 'ad.control.MALE.random.DOWN' | 
+                           category == 'ad.control.MALE.random.UP')
+dummyDf$adj.pval[dummyDf$adj.pval==0] = 10^-300
+dummyDf$category <- gsub('ad\\.control\\.FEMALE\\.random\\.DOWN','Female, Down',dummyDf$category)
+dummyDf$category <- gsub('ad\\.control\\.MALE\\.random\\.DOWN','Male, Down',dummyDf$category)
+dummyDf$category <- gsub('ad\\.control\\.FEMALE\\.random\\.UP','Female, Up',dummyDf$category)
+dummyDf$category <- gsub('ad\\.control\\.MALE\\.random\\.UP','Male, Up',dummyDf$category)
+dummyDf <- dplyr::left_join(dummyDf,modMeta)
+
+g<-AMPAD::make_dot_plot(dummyDf,
+                 xlab='AD Coexpression Module',
+                 ylab='DEG Sex Specific Meta Analysis')
+g
+
+```
+
 
