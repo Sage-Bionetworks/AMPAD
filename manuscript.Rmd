@@ -3,13 +3,42 @@ title: "Notebook with AMP-AD RNA-seq network analysis results"
 output: html_notebook
 ---
 
-Build aggregate modules from individual modules and differential expression meta-analysis, this will give you the same modules as are stored at syn11932957
+Build aggregate modules from individual modules and differential expression meta-analysis, this will give you the same modules as are stored at syn11932957 - this code block builds the aggregate modules, and then checks if they are different from the paper aggregate modules.
 
 ```{r}
 synapser::synLogin()
+aggModsNew <- AMPAD::buildAggregateModules()
+aggModsPaper <- synapser::synTableQuery('select * from syn11932957')$asDataFrame()[,-c(1,2)]
 
+sum(aggModsNew[,1]!=aggModsPaper[,1])
+sum(aggModsNew[,2]!=aggModsPaper[,2])
+```
+
+
+Make the pairwise enrichment plot (Figure 1B)
+
+```{r}
+synapser::synLogin()
+AMPAD::pairwiseMatrixOfEnrichments('syn11932957')
+```
+
+
+Build aggregate modules without restricting the aggregation operation to the individual modules that are enriched for differentially expressed genes in AD.
+
+```{r}
+synapser::synLogin()
+aggModsNonAdNew <- AMPAD::buildAggregateNonADModules()
 
 ```
+
+Show overlap between AD and non AD (Figure SXF)
+```{r}
+AMPAD::compareADtoNonADmods(aggModsNew,
+                            aggModsNonAdNew)
+
+```
+
+
 
 
 

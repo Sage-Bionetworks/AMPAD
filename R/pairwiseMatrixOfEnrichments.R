@@ -1,5 +1,5 @@
-pairwiseMatrixOfEnrichments = function(synId){
-  synapser::synLogin()
+pairwiseMatrixOfEnrichments = function(synId,outputFile=FALSE){
+
 
   ##pull aggregate modules
   #aggregateModules <- rSynapseUtilities::loadFullTable(synId)
@@ -53,19 +53,35 @@ pairwiseMatrixOfEnrichments = function(synId){
   #get rid of underflow issues
   #red,yellow,green,blue,purple
   mats$pval <- mats$pval + 1e-300
-  tiff(filename='figure2A.tiff',height=85,width=85,units='mm',res=300)
-  ann_colors<-list(Cluster=c(`Consensus Cluster A`='#F8766D',
-                 `Consensus Cluster B`='#A3A500',
-                 `Consensus Cluster C`='#00BF7D',
-                 `Consensus Cluster D`='#00B0F6',
-                 `Consensus Cluster E`='#E76BF3'))
-  pheatmap::pheatmap(-log10(mats$pval),
-                     show_colnames = F,
-                     border_color = NA,
-                     fontsize=4,
-                     treeheight_row=10,
-                     treeheight_col=10,
-                     annotation_col = customDf,
-                     annotation_colors = ann_colors[1])
-  dev.off()
+  if(outputFile){
+    tiff(filename='figure2A.tiff',height=85,width=85,units='mm',res=300)
+    ann_colors<-list(Cluster=c(`Consensus Cluster A`='#F8766D',
+                               `Consensus Cluster B`='#A3A500',
+                               `Consensus Cluster C`='#00BF7D',
+                               `Consensus Cluster D`='#00B0F6',
+                               `Consensus Cluster E`='#E76BF3'))
+    pheatmap::pheatmap(-log10(mats$pval),
+                       show_colnames = F,
+                       border_color = NA,
+                       fontsize=4,
+                       treeheight_row=10,
+                       treeheight_col=10,
+                       annotation_col = customDf,
+                       annotation_colors = ann_colors[1])
+    dev.off()
+  } else{
+    ann_colors<-list(Cluster=c(`Consensus Cluster A`='#F8766D',
+                               `Consensus Cluster B`='#A3A500',
+                               `Consensus Cluster C`='#00BF7D',
+                               `Consensus Cluster D`='#00B0F6',
+                               `Consensus Cluster E`='#E76BF3'))
+    pheatmap::pheatmap(-log10(mats$pval),
+                       show_colnames = F,
+                       border_color = NA,
+                       fontsize=4,
+                       treeheight_row=10,
+                       treeheight_col=10,
+                       annotation_col = customDf,
+                       annotation_colors = ann_colors[1])
+  }
 }
