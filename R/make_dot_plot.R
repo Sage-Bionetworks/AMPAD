@@ -87,6 +87,7 @@ make_dot_plot <- function(dummyDf,xlab,ylab,cowsize=11,outputFile=FALSE,fileName
   g <- g + AMPAD::cowplot_rotated(cowsize)
 
   if(outputFile){
+    g
     ggplot2::ggsave(fileName,device='tiff',units='mm',width=85,height=85,scale=1.8)
   }
   return(g)

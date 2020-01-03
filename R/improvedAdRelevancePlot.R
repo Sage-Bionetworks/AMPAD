@@ -1,5 +1,5 @@
-improvedAdRelevancePlot <- function(){
-  synapser::synLogin()
+improvedAdRelevancePlot <- function(outputFile=FALSE){
+
   adGeneticsSummaryAggOld <- AMPAD::getAdGenetics(synId='syn10915669')
   adGeneticsSummaryAgg <- AMPAD::getAdGenetics(synId='syn11926100')
   adGeneticsSummaryInd <- AMPAD::getAdGenetics(synId='syn10309369')
@@ -27,7 +27,10 @@ improvedAdRelevancePlot <- function(){
   foobar3$pathway <- rownames(foobar)
   foobar4<-tidyr::gather(foobar3,key='geneset',value='OR',-pathway)
 
-  gaiteri_mods <- read.csv('zhang_modules.csv',stringsAsFactors=F)
+
+  mckenzieObj1 <- synapser::synGet('syn21482836')
+  gaiteri_mods <- data.table::fread(mckenzieObj1$path,data.table = F)
+  #gaiteri_mods <- read.csv('zhang_modules.csv',stringsAsFactors=F)
   modList <- lapply(unique(gaiteri_mods$Module), AMPAD::listify,gaiteri_mods$Gene_Symbol,gaiteri_mods$Module)
   names(modList) <- unique(gaiteri_mods$Module)
   foobarX <- AMPAD::outerSapplyParallel( AMPAD::fisherWrapperPval, modList, adList,foo2$external_gene_name)
@@ -59,7 +62,9 @@ improvedAdRelevancePlot <- function(){
   gaiteriEnrichment <- dplyr::left_join(foobarX2,foobarX4)
   degAnalysisEnrichment <- dplyr::left_join(foobar2,foobar4)
 
-  load('aggregateModules.rda')
+  #load('aggregateModules.rda')
+  aggmodobj <- synapser::synGet('syn21483261')
+  load(aggmodobj$path)
   combinedMatrix <- rbind(dlpfc_mods$moduleGraph,
                           cbe_mods$moduleGraph,
                           tcx_mods$moduleGraph,
@@ -192,8 +197,12 @@ improvedAdRelevancePlot <- function(){
 
 
   #
-  g
+  #g
   #g2 <- cowplot::plot_grid(g)
-  ggplot2::ggsave('figure1.tiff',device='tiff',units='mm',width=114,height=85,scale=2)
+  if(outputFile){
+    g
+    ggplot2::ggsave('figure1.tiff',device='tiff',units='mm',width=114,height=85,scale=2)
+  }
+  return(g)
 
 }

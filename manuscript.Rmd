@@ -23,6 +23,26 @@ AMPAD::pairwiseMatrixOfEnrichments('syn11932957')
 ```
 
 
+
+Show that the aggregate modules are better enriched than other potential AD modules (Figure 1A)
+
+```{r}
+synapser::synLogin()
+g <- AMPAD::improvedAdRelevancePlot()
+g
+```
+
+
+
+Show summaries of overlaps with UpSet plots (Figure S1A-S1E)
+
+```{r}
+synapser::synLogin()
+res<-AMPAD::aggregate_module_summary_plots()
+res
+```
+
+
 Build aggregate modules without restricting the aggregation operation to the individual modules that are enriched for differentially expressed genes in AD.
 
 ```{r}
@@ -39,11 +59,21 @@ AMPAD::compareADtoNonADmods(aggModsNew,
 ```
 
 
+
+
 test building of gene sets
 
 ```{r}
 targetedEnrichment <- AMPAD::run_full_enrichment_suite()
 ```
+
+Run MAGMA analysis (must have magma tool installed in current working directory that this notebook is running from), producing the plot from Figure S1F
+```{r}
+synapser::synLogin()
+g <- AMPAD::run_magma_analysis()
+g
+```
+
 
 Plot from Figure 1c
 ```{r}
