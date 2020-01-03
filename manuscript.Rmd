@@ -1,0 +1,15 @@
+---
+title: "Notebook with AMP-AD RNA-seq network analysis results"
+output: html_notebook
+---
+
+Build aggregate modules from individual modules and differential expression meta-analysis, this will give you the same modules as are stored at synXXXver.x
+
+```{r}
+synapser::synLogin()
+
+
+```
+
+
+

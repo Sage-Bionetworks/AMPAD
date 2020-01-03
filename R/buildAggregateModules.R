@@ -11,7 +11,6 @@ buildAggregateModules <- function(fullManifestOfDAta){
 
   #replace with indivudal module manifest
   #indMods <- fullManifestOfDAta$IndividualModules
-  synapser::synLogin()
   indMods <- synapser::synTableQuery("select * from syn10309369")$asDataFrame()
   indMods <- indMods[,-c(1,2)]
   #re-run enrichment analysis of full module set for these lists
@@ -149,5 +148,5 @@ buildAggregateModules <- function(fullManifestOfDAta){
                                    fp_mods$df)
 
   save(dlpfc_mods,cbe_mods,tcx_mods,ifg_mods,stg_mods,phg_mods,fp_mods,file='aggregateModules.rda')
-  rSynapseUtilities::makeTable(AggregateModuleManifest,'AMP-AD aggregate modules',projectId='syn2370594')
+  #rSynapseUtilities::makeTable(AggregateModuleManifest,'AMP-AD aggregate modules',projectId='syn2370594')
 }
