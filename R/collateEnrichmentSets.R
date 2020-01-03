@@ -39,8 +39,8 @@ collateEnrichmentSets = function(){
   adList$genecards <- genecards$`Gene Symbol`
 
   #load mckenzie oligo data
-
-  mckenzie <- data.table::fread('zhang_modules.csv',data.table = F)
+  mckenzieObj1 <- synapser::synGet('syn21482836')
+  mckenzie <- data.table::fread(mckenzieObj1$path,data.table = F)
   adList$MSSM <- dplyr::filter(mckenzie,Module == 'Red' | Module == 'List green' | Module == 'Green')$Gene_Symbol
   enrichmentSets$MSSM2 <- AMPAD::listifyWrapper(mckenzie$Module,mckenzie$Gene_Symbol)
 
@@ -59,8 +59,12 @@ collateEnrichmentSets = function(){
 
   #adList$`AMP-AD Allen et al. 2018 AD+PSP TCX10.CS` <- dplyr::filter(allen,module=='TCX10')$gene_symbol
 
-  allen_simple <- data.table::fread('tcx_simple_oligo.csv',data.table=F)
-  allen_comprehensive <- data.table::fread('tcx_comprehensive_oligo.csv',data.table=F)
+
+  allen_simple_obj1 <- synapser::synGet('syn21482838')
+  allen_simple <- data.table::fread(allen_simple_obj1$path,data.table=F)
+
+  allen_comprehensive_obj1 <- synapser::synGet('syn21482837')
+  allen_comprehensive <- data.table::fread(allen_comprehensive_obj1$path,data.table=F)
 
   allen_simple$module <- paste0(allen_simple$module,
                                 '_simple')
@@ -93,7 +97,8 @@ collateEnrichmentSets = function(){
 
 
   #load johnson 2018
-  johnson <- data.table::fread('johnson.csv',data.table=F)
+  johnsonObj1 <- synapser::synGet('syn21482834')
+  johnson <- data.table::fread(johnsonObj1$path,data.table=F)
   adList$Emory <- dplyr::filter(johnson,Module == WGCNA::labels2colors(17) | Module == WGCNA::labels2colors(18) | Module == WGCNA::labels2colors(10) | Module == WGCNA::labels2colors(15) | Module == WGCNA::labels2colors(29) | Module == WGCNA::labels2colors(40))$geneName
   enrichmentSets$ad <- lapply(adList,unique)
 
@@ -102,7 +107,8 @@ collateEnrichmentSets = function(){
   #pull cell types
   enrichmentSets$cell <- lapply(GeneSets$Cell_Markers,unique)
 
-  df11 <- data.table::fread('lakeSCGeneSig.csv',data.table=F)
+  df11Obj1 <- synapser::synGet('syn21482835')
+  df11 <- data.table::fread(df11Obj1$path,data.table=F)
   enrichmentSets$cell2 <- AMPAD::listifyWrapper(df11$Cluster,df11$Gene)
 
 
