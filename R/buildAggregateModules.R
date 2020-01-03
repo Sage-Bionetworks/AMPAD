@@ -1,4 +1,4 @@
-buildAggregateModules <- function(fullManifestOfDAta){
+buildAggregateModules <- function(){
   #syn11914811
   #replace this with the appropriate synapse call soon
   fob1 <- synapser::synGet('syn11914811')
@@ -148,5 +148,6 @@ buildAggregateModules <- function(fullManifestOfDAta){
                                    fp_mods$df)
 
   save(dlpfc_mods,cbe_mods,tcx_mods,ifg_mods,stg_mods,phg_mods,fp_mods,file='aggregateModules.rda')
+  return(AggregateModuleManifest)
   #rSynapseUtilities::makeTable(AggregateModuleManifest,'AMP-AD aggregate modules',projectId='syn2370594')
 }
