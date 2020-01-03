@@ -75,6 +75,17 @@ g
 ```
 
 
+Run expression weighted cell enrichment method (must have downloaded and unzipped the flat file from GSE97930 in your current working directory: https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE97930&format=file&file=GSE97930%5FFrontalCortex%5FsnDrop%2Dseq%5FUMI%5FCount%5FMatrix%5F08%2D01%2D2017%2Etxt%2Egz )
+
+This step also may require a large compute instance (with > 64 Gb of memory) to successfully run.
+
+```{r}
+synapser::synLogin()
+g <- AMPAD::run_ewce()
+g
+```
+
+
 Plot from Figure 1c
 ```{r}
 synapser::synLogin()
