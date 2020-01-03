@@ -1,7 +1,8 @@
-run_amp_ad_enrichment <- function(geneSetList,
+run_amp_ad_enrichment2_lists <- function(geneSetList,
                                   geneSetName,
+                                  refGeneSetList,
                                   hgnc = TRUE,
-                                  manifestId = "syn10338156"){
+                                  testhgnc=FALSE){
   #INPUT:
   #geneSetList - a list of genes in hgnc or ensembl format
   #geneSetName - name of geneset (should be a single character string)
@@ -10,37 +11,28 @@ run_amp_ad_enrichment <- function(geneSetList,
 
 
   #OUTPUT:
-  #data frame with module name, gene set name, p-value, and odds ratio of enrichment
-  library(dplyr)
-  cat('logging into Synapse...\n')
-  synapseClient::synapseLogin()
-  #grab module definitions
-  cat('pulling modules...\n')
-  allMods <- synapseClient::synTableQuery(paste0("SELECT * FROM ",manifestId))@values
+  #data frame with module name, gene set name, p-value, and odds ratio of enrichment, intersections, and gene set sizes
+  straightHgncConversion <- function(x){
+    y<-AMPAD::convertHgncToEnsembl(x)
+    return(unique(y$ensembl_gene_id))
+  }
 
-  listify <- function(x,y,z){
-    ###fxn will listify a long form table
-    ###x: unique key
-    ###y: values
-    ###z: keys
-    return(unique(y[which(z==x)]))
+  straightEnsemblConversion <- function(x){
+    y<- AMPAD::convertEnsemblToHgnc(x)
+    return(unique(y$external_gene_name))
   }
-  cat('building module gene sets...\n')
-  if(hgnc){
-    modulesLargeList <- lapply(unique(allMods$ModuleNameFull),
-                               listify,
-                               allMods$external_gene_name,
-                               allMods$ModuleNameFull)
-  }else{
-    modulesLargeList <- lapply(unique(allMods$ModuleNameFull),
-                               listify,
-                               allMods$GeneID,
-                               allMods$ModuleNameFull)
+
+  if((hgnc!=testhgnc) & (!testhgnc)){
+    geneSetList <- lapply(geneSetList,straightEnsemblConversion)
+  }else if((hgnc!=testhgnc) & (testhgnc)){
+    geneSetList <- lapply(geneSetList,straightHgncConversion)
   }
-  names(modulesLargeList) <- unique(allMods$ModuleNameFull)
+
+
+  library(dplyr)
   cat('removing genes that are not relevant from reference set...\n')
   #get unique gene keys,drop categories in both cases that are 0 in size
-  uniqueModuleList <- modulesLargeList %>%
+  uniqueModuleList <- refGeneSetList %>%
     unlist %>%
     unique
 
@@ -54,7 +46,7 @@ run_amp_ad_enrichment <- function(geneSetList,
 
   res <- list()
   res$fisher <- AMPAD::outerSapplyParallel(AMPAD::fisherWrapper,
-                                                      modulesLargeList,
+                                                      refGeneSetList,
                                                       geneSetList,
                                                       refGeneSet)
   #pvalues are odd rows, odds ratios are even rows
@@ -62,6 +54,15 @@ run_amp_ad_enrichment <- function(geneSetList,
   rownames(res$pval) <- names(geneSetList)
   res$OR <- res$fisher[which(1:nrow(res$fisher)%%2==0),]
   rownames(res$OR) <- names(geneSetList)
+
+  sizeOfInter <- function(x,y){
+    return(length(intersect(x,y)))
+  }
+
+  res$inter <- AMPAD::outerSapplyParallel(sizeOfInter,
+                                                     refGeneSetList,
+                                                     geneSetList)
+
 
   cat('producing tidy data frame....\n')
   #transpose pvalues
@@ -82,13 +83,39 @@ run_amp_ad_enrichment <- function(geneSetList,
   #go from matrix form - module by enrichment categories - to long table form
   gatherTest2 <- tidyr::gather(or1,category,fisherOR,-ModuleNameFull)
 
+  #transpose intersection sizes
+  inter1 <- t(res$inter)
+  #make into a data frame
+  inter1 <- data.frame(inter1,stringsAsFactors=F)
+  #create a unique key for each row for gather step
+  inter1 <- dplyr::mutate(inter1,ModuleNameFull = rownames(inter1))
+  #go from matrix form - module by enrichment categories - to long table form
+  gatherTest3 <- tidyr::gather(inter1,category,nInter,-ModuleNameFull)
+
+
+  ###get sizes
+  aggModSize <- data.frame(ModuleNameFull = names(refGeneSetList),
+                           mod_size = sapply(refGeneSetList,length),
+                           stringsAsFactors = F)
+  categorySize <- data.frame(category = make.names(names(geneSetList)),
+                             category_size = sapply(geneSetList,length),
+                             stringsAsFactors=F)
+
+
+
   #do a left join to combine the pvalues and odds ratios
   gatherTest <- dplyr::left_join(gatherTest1,
                                  gatherTest2)
-
+  gatherTest <- dplyr::left_join(gatherTest,
+                                 gatherTest3)
+  gatherTest <- dplyr::left_join(gatherTest,
+                                 aggModSize)
+  gatherTest <- dplyr::left_join(gatherTest,
+                                 categorySize)
   #add in the geneset names
   gatherTest <- dplyr::mutate(gatherTest,
                               geneSet = geneSetName)
+
 
   #return the data frame
   return(gatherTest)

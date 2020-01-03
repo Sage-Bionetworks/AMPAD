@@ -1,4 +1,4 @@
-run_amp_ad_enrichment <- function(geneSetList,
+run_amp_ad_enrichment2 <- function(geneSetList,
                                   geneSetName,
                                   hgnc = TRUE,
                                   manifestId = "syn10338156"){
@@ -10,13 +10,13 @@ run_amp_ad_enrichment <- function(geneSetList,
 
 
   #OUTPUT:
-  #data frame with module name, gene set name, p-value, and odds ratio of enrichment
+  #data frame with module name, gene set name, p-value, and odds ratio of enrichment, intersections, and gene set sizes
   library(dplyr)
   cat('logging into Synapse...\n')
-  synapseClient::synapseLogin()
+  synapser::synLogin()
   #grab module definitions
   cat('pulling modules...\n')
-  allMods <- synapseClient::synTableQuery(paste0("SELECT * FROM ",manifestId))@values
+  allMods <- synapser::synTableQuery(paste0("SELECT * FROM ",manifestId))$asDataFrame()
 
   listify <- function(x,y,z){
     ###fxn will listify a long form table
@@ -63,6 +63,15 @@ run_amp_ad_enrichment <- function(geneSetList,
   res$OR <- res$fisher[which(1:nrow(res$fisher)%%2==0),]
   rownames(res$OR) <- names(geneSetList)
 
+  sizeOfInter <- function(x,y){
+    return(length(intersect(x,y)))
+  }
+
+  res$inter <- AMPAD::outerSapplyParallel(sizeOfInter,
+                                                     modulesLargeList,
+                                                     geneSetList)
+
+
   cat('producing tidy data frame....\n')
   #transpose pvalues
   pval1 <- t(res$pval)
@@ -82,13 +91,39 @@ run_amp_ad_enrichment <- function(geneSetList,
   #go from matrix form - module by enrichment categories - to long table form
   gatherTest2 <- tidyr::gather(or1,category,fisherOR,-ModuleNameFull)
 
+  #transpose intersection sizes
+  inter1 <- t(res$inter)
+  #make into a data frame
+  inter1 <- data.frame(inter1,stringsAsFactors=F)
+  #create a unique key for each row for gather step
+  inter1 <- dplyr::mutate(inter1,ModuleNameFull = rownames(inter1))
+  #go from matrix form - module by enrichment categories - to long table form
+  gatherTest3 <- tidyr::gather(inter1,category,nInter,-ModuleNameFull)
+
+
+  ###get sizes
+  aggModSize <- data.frame(ModuleNameFull = names(modulesLargeList),
+                           mod_size = sapply(modulesLargeList,length),
+                           stringsAsFactors = F)
+  categorySize <- data.frame(category = make.names(names(geneSetList)),
+                             category_size = sapply(geneSetList,length),
+                             stringsAsFactors=F)
+
+
+
   #do a left join to combine the pvalues and odds ratios
   gatherTest <- dplyr::left_join(gatherTest1,
                                  gatherTest2)
-
+  gatherTest <- dplyr::left_join(gatherTest,
+                                 gatherTest3)
+  gatherTest <- dplyr::left_join(gatherTest,
+                                 aggModSize)
+  gatherTest <- dplyr::left_join(gatherTest,
+                                 categorySize)
   #add in the geneset names
   gatherTest <- dplyr::mutate(gatherTest,
                               geneSet = geneSetName)
+
 
   #return the data frame
   return(gatherTest)

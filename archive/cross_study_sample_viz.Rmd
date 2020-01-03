@@ -1,0 +1,126 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+ROSMAP data present
+```{r}
+synapser::synLogin()
+foo <- synapser::synTableQuery("select * from syn18912660")$asDataFrame()
+foo <- dplyr::filter(foo,study=='ROSMAP')
+bar <- dplyr::select(foo,individualID,dataType,assay,futureData)
+
+fxn1 <- function(x,y){
+  if(x=='metabolomics'){
+    return(x)
+  }else{
+    return(y)
+  }
+}
+
+
+bar$dataDescriptor <- mapply(fxn1,bar$dataType,bar$assay)
+bar$exists <- bar$futureData
+bar$exists[bar$exists==TRUE] <- 2
+bar$exists[is.na(bar$exists)] <- 1
+bar <- dplyr::select(bar,individualID,dataDescriptor,exists)
+uniqueId <- paste0(bar$individualID,bar$dataDescriptor)
+dup <- duplicated(uniqueId)
+dupInd <- uniqueId[dup]
+keepIndex <- uniqueId%in%dupInd
+
+bar$exists[keepIndex] <- 3
+bar <- bar[!dup,]
+
+#bar <- bar[!dup,]
+baz <- tidyr::spread(bar,key=individualID,value=exists)
+baz[is.na(baz)] <- 0
+rownames(baz) <- baz$dataDescriptor
+baz <- baz[,-1]
+baz2 <- t(apply(baz,1,as.numeric))
+
+ab<-pheatmap::pheatmap(baz2)
+baz3 <- baz2[ab$tree_row$order,ab$tree_col$order]
+png(file='ROSMAP.png',width=2400,height=1600,pointsize=14)
+pheatmap::pheatmap(baz3,color = rev(viridis::viridis(4)),cluster_rows = F,cluster_cols =F,legend_breaks=0:3,legend_labels=c('Absent\n\n\n\n','Available\n\n','Planned','\n\nAvailable\n+Planned'))
+dev.off()
+```
+
+
+```{r}
+synapser::synLogin()
+foo <- synapser::synTableQuery("select * from syn18912660")$asDataFrame()
+foo <- dplyr::filter(foo,study=='MayoRNAseq')
+bar <- dplyr::select(foo,individualID,dataType,assay,futureData)
+
+bar$dataDescriptor <- bar$assay
+bar$exists <- bar$futureData
+bar$exists[bar$exists==TRUE] <- 2
+bar$exists[is.na(bar$exists)] <- 1
+bar <- dplyr::select(bar,individualID,dataDescriptor,exists)
+uniqueId <- paste0(bar$individualID,bar$dataDescriptor)
+dup <- duplicated(uniqueId)
+dupInd <- uniqueId[dup]
+keepIndex <- uniqueId%in%dupInd
+
+bar$exists[keepIndex] <- 3
+bar <- bar[!dup,]
+
+#bar <- bar[!dup,]
+baz <- tidyr::spread(bar,key=individualID,value=exists)
+baz[is.na(baz)] <- 0
+rownames(baz) <- baz$dataDescriptor
+baz <- baz[,-1]
+baz2 <- t(apply(baz,1,as.numeric))
+
+ab<-pheatmap::pheatmap(baz2)
+baz3 <- baz2[ab$tree_row$order,ab$tree_col$order]
+png(file='ROSMAP.png',width=2400,height=1600,pointsize=14)
+pheatmap::pheatmap(baz3,color = rev(viridis::viridis(4)),cluster_rows = F,cluster_cols =F,legend_breaks=0:3,legend_labels=c('Absent\n\n\n\n','Available\n\n','Planned','\n\nAvailable\n+Planned'))
+dev.off()
+```
+
+
+```{r}
+synapser::synLogin()
+foo <- synapser::synTableQuery("select * from syn18912660")$asDataFrame()
+foo <- dplyr::filter(foo,study=='MSBB')
+bar <- dplyr::select(foo,individualID,dataType,assay,futureData)
+
+
+fxn1 <- function(x){
+  if(is.na(x)){
+    return('MSBBproteomics')
+  }else{
+    return(x)
+  }
+}
+
+
+bar$dataDescriptor <- sapply(bar$assay,fxn1)
+#bar$dataDescriptor <- bar$assay
+bar$exists <- bar$futureData
+bar$exists[bar$exists==TRUE] <- 2
+bar$exists[is.na(bar$exists)] <- 1
+bar <- dplyr::select(bar,individualID,dataDescriptor,exists)
+uniqueId <- paste0(bar$individualID,bar$dataDescriptor)
+dup <- duplicated(uniqueId)
+dupInd <- uniqueId[dup]
+keepIndex <- uniqueId%in%dupInd
+
+bar$exists[keepIndex] <- 3
+bar <- bar[!dup,]
+
+#bar <- bar[!dup,]
+baz <- tidyr::spread(bar,key=individualID,value=exists)
+baz[is.na(baz)] <- 0
+rownames(baz) <- baz$dataDescriptor
+baz <- baz[,-1]
+baz2 <- t(apply(baz,1,as.numeric))
+
+ab<-pheatmap::pheatmap(baz2)
+baz3 <- baz2[ab$tree_row$order,ab$tree_col$order]
+png(file='ROSMAP.png',width=2400,height=1600,pointsize=14)
+pheatmap::pheatmap(baz3,color = rev(viridis::viridis(4)),cluster_rows = F,cluster_cols =F,legend_breaks=0:3,legend_labels=c('Absent\n\n\n\n','Available\n\n','Planned','\n\nAvailable\n+Planned'))
+dev.off()
+```

@@ -11,7 +11,7 @@ buildTargetedModules <- function(tissueType,synId="syn11925259"){
                            tissueType,
                            "\'")
   pairwise <- synapseClient::synTableQuery(pairwiseString)@values %>%
-    utilityFunctions::removeSwappedDupKeyValueDf() %>%
+    AMPAD::removeSwappedDupKeyValueDf() %>%
     dplyr::mutate(adj=p.adjust(fisherPval,method='bonferroni')) %>%
     dplyr::filter(adj<=0.05) %>%
     dplyr::filter(from%in%bar$ModuleNameFull & to %in% bar$ModuleNameFull) %>%
@@ -150,7 +150,7 @@ buildTargetedModules <- function(tissueType,synId="syn11925259"){
                  MoreArgs = list(tissueType=tissueType),
                  SIMPLIFY=F)
   res$df <- do.call(rbind,res$df)
-  exg <- utilityFunctions::convertEnsemblToHgnc(res$df$GeneID)
+  exg <- AMPAD::convertEnsemblToHgnc(res$df$GeneID)
   res$df <- dplyr::left_join(res$df,exg,by = c('GeneID' = 'ensembl_gene_id'))
   return(res)
 }
