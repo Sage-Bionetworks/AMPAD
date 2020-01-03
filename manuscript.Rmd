@@ -39,6 +39,31 @@ AMPAD::compareADtoNonADmods(aggModsNew,
 ```
 
 
+test building of gene sets
 
+```{r}
+targetedGeneSets <- AMPAD::collateEnrichmentSets()
+```
 
+Plot from Figure 1c
+```{r}
+synapser::synLogin()
+modMeta <- AMPAD::getModuleMetainfo('syn11932957')
+dummyDf <- targetedEnrichment$cell
+dummyDf$fisherOR[dummyDf$adj.pval>=0.05] <- NA
+#dummyDf <- dplyr::filter(targetedEnrichment$cell,adj.pval<=0.05)
+dummyDf <- dplyr::left_join(dummyDf,modMeta)
+dummyDf$category <- gsub('Zhang\\.','',dummyDf$category)
+dummyDf$category <- factor(dummyDf$category,levels = rev(c('Astrocyte',
+                                                       'Endothelial',
+                                                       'Microglia',
+                                                       'Neuron',
+                                                       'MyelinOligos',
+                                                       'NewOligos',
+                                                       'OPC')))
+g<-AMPAD::make_dot_plot(dummyDf,
+                 xlab='AD Coexpression Module',
+                 ylab='Cell Type Signature')
+g
+```
 
