@@ -53,7 +53,7 @@ run_amp_ad_enrichment2 <- function(geneSetList,
   cat('running enrichments....\n')
 
   res <- list()
-  res$fisher <- utilityFunctions::outerSapplyParallel(utilityFunctions::fisherWrapper,
+  res$fisher <- AMPAD::outerSapplyParallel(AMPAD::fisherWrapper,
                                                       modulesLargeList,
                                                       geneSetList,
                                                       refGeneSet)
@@ -67,7 +67,7 @@ run_amp_ad_enrichment2 <- function(geneSetList,
     return(length(intersect(x,y)))
   }
 
-  res$inter <- utilityFunctions::outerSapplyParallel(sizeOfInter,
+  res$inter <- AMPAD::outerSapplyParallel(sizeOfInter,
                                                      modulesLargeList,
                                                      geneSetList)
 

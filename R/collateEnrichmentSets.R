@@ -42,15 +42,15 @@ collateEnrichmentSets = function(){
 
   mckenzie <- data.table::fread('zhang_modules.csv',data.table = F)
   adList$MSSM <- dplyr::filter(mckenzie,Module == 'Red' | Module == 'List green' | Module == 'Green')$Gene_Symbol
-  enrichmentSets$MSSM2 <- utilityFunctions::listifyWrapper(mckenzie$Module,mckenzie$Gene_Symbol)
+  enrichmentSets$MSSM2 <- AMPAD::listifyWrapper(mckenzie$Module,mckenzie$Gene_Symbol)
 
 
   sczNetworkObj <- synapser::synGet('syn7118804')
   sczNetwork <- data.table::fread(sczNetworkObj$path,data.table=F)
-  enrichmentSets$scz <- utilityFunctions::listifyWrapper(sczNetwork$ModuleColor,sczNetwork$Ensembl)
+  enrichmentSets$scz <- AMPAD::listifyWrapper(sczNetwork$ModuleColor,sczNetwork$Ensembl)
   controlNetworkObj <- synapser::synGet('syn7118802')
   controlNetwork <- data.table::fread(controlNetworkObj$path,data.table=F)
-  enrichmentSets$control <- utilityFunctions::listifyWrapper(controlNetwork$ModuleColor,controlNetwork$Ensembl)
+  enrichmentSets$control <- AMPAD::listifyWrapper(controlNetwork$ModuleColor,controlNetwork$Ensembl)
 
 
   #load allen oligo data
@@ -67,7 +67,7 @@ collateEnrichmentSets = function(){
   allen_comprehensive$module <- paste0(allen_comprehensive$module,
                                        '_comprehensive')
   allen_list_s <- sapply(unique(allen_simple$module),
-                         utilityFunctions::listify,
+                         AMPAD::listify,
                          allen_simple$gene_symbol,
                          allen_simple$module)
   names(allen_list_s) <- unique(allen_simple$module)
@@ -75,7 +75,7 @@ collateEnrichmentSets = function(){
 
 
   allen_list_c <- sapply(unique(allen_comprehensive$module),
-                         utilityFunctions::listify,
+                         AMPAD::listify,
                          allen_comprehensive$gene_symbol,
                          allen_comprehensive$module)
 
@@ -103,7 +103,7 @@ collateEnrichmentSets = function(){
   enrichmentSets$cell <- lapply(GeneSets$Cell_Markers,unique)
 
   df11 <- data.table::fread('lakeSCGeneSig.csv',data.table=F)
-  enrichmentSets$cell2 <- utilityFunctions::listifyWrapper(df11$Cluster,df11$Gene)
+  enrichmentSets$cell2 <- AMPAD::listifyWrapper(df11$Cluster,df11$Gene)
 
 
 

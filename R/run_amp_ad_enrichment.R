@@ -53,7 +53,7 @@ run_amp_ad_enrichment <- function(geneSetList,
   cat('running enrichments....\n')
 
   res <- list()
-  res$fisher <- utilityFunctions::outerSapplyParallel(utilityFunctions::fisherWrapper,
+  res$fisher <- AMPAD::outerSapplyParallel(AMPAD::fisherWrapper,
                                                       modulesLargeList,
                                                       geneSetList,
                                                       refGeneSet)

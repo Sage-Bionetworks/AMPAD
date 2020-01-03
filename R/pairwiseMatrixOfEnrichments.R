@@ -8,7 +8,7 @@ pairwiseMatrixOfEnrichments = function(synId){
 
   #View(aggregateModules)
 
-  mats <- utilityFunctions::pairwiseMatrixOfEnrichments(key=aggregateModules$Module,
+  mats <- AMPAD::computePairwiseMatrixOfEnrichments(key=aggregateModules$Module,
                                                         value=aggregateModules$GeneID)
 
 

@@ -13,30 +13,30 @@ improvedAdRelevancePlot <- function(){
   foo2 <- synapser::synTableQuery("select distinct external_gene_name from syn10309369")$asDataFrame()
   foo2ensg <- synapser::synTableQuery("select distinct GeneID from syn10309369")$asDataFrame()
 
-  adListensg <- lapply(adList,utilityFunctions::convertHgncToEnsembl)
+  adListensg <- lapply(adList,AMPAD::convertHgncToEnsembl)
   adListensg2 <- lapply(adListensg,function(x) unique(x$ensembl_gene_id))
 
-  foobar <- utilityFunctions::outerSapplyParallel( utilityFunctions::fisherWrapperPval, amp.ad.de.geneSets, adListensg2,foo2ensg$GeneID)
+  foobar <- AMPAD::outerSapplyParallel( AMPAD::fisherWrapperPval, amp.ad.de.geneSets, adListensg2,foo2ensg$GeneID)
 
   foobar <- data.frame(foobar,stringsAsFactors=F)
   foobar$pathway <- rownames(foobar)
   foobar2<-tidyr::gather(foobar,key='geneset',value='pval',-pathway)
 
-  foobar3 <- utilityFunctions::outerSapplyParallel( utilityFunctions::fisherWrapperOR, amp.ad.de.geneSets, adListensg2,foo2ensg$GeneID)
+  foobar3 <- AMPAD::outerSapplyParallel( AMPAD::fisherWrapperOR, amp.ad.de.geneSets, adListensg2,foo2ensg$GeneID)
   foobar3 <- data.frame(foobar3,stringsAsFactors=F)
   foobar3$pathway <- rownames(foobar)
   foobar4<-tidyr::gather(foobar3,key='geneset',value='OR',-pathway)
 
   gaiteri_mods <- read.csv('zhang_modules.csv',stringsAsFactors=F)
-  modList <- lapply(unique(gaiteri_mods$Module), utilityFunctions::listify,gaiteri_mods$Gene_Symbol,gaiteri_mods$Module)
+  modList <- lapply(unique(gaiteri_mods$Module), AMPAD::listify,gaiteri_mods$Gene_Symbol,gaiteri_mods$Module)
   names(modList) <- unique(gaiteri_mods$Module)
-  foobarX <- utilityFunctions::outerSapplyParallel( utilityFunctions::fisherWrapperPval, modList, adList,foo2$external_gene_name)
+  foobarX <- AMPAD::outerSapplyParallel( AMPAD::fisherWrapperPval, modList, adList,foo2$external_gene_name)
 
   foobarX <- data.frame(foobarX,stringsAsFactors=F)
   foobarX$pathway <- rownames(foobarX)
   foobarX2<-tidyr::gather(foobarX,key='geneset',value='pval',-pathway)
 
-  foobarX3 <- utilityFunctions::outerSapplyParallel( utilityFunctions::fisherWrapperOR, modList, adList,foo2$external_gene_name)
+  foobarX3 <- AMPAD::outerSapplyParallel( AMPAD::fisherWrapperOR, modList, adList,foo2$external_gene_name)
   foobarX3 <- data.frame(foobarX3,stringsAsFactors=F)
   foobarX3$pathway <- rownames(foobarX)
   foobarX4<-tidyr::gather(foobarX3,key='geneset',value='OR',-pathway)
@@ -44,13 +44,13 @@ improvedAdRelevancePlot <- function(){
 
   load(synapser::synGet('syn11914811')$path)
   all.gs <- all.gs[1:12]
-  foobarY <- utilityFunctions::outerSapplyParallel( utilityFunctions::fisherWrapperPval, all.gs, adListensg2,foo2ensg$GeneID)
+  foobarY <- AMPAD::outerSapplyParallel( AMPAD::fisherWrapperPval, all.gs, adListensg2,foo2ensg$GeneID)
 
   foobarY <- data.frame(foobarY,stringsAsFactors=F)
   foobarY$pathway <- rownames(foobarY)
   foobarY2<-tidyr::gather(foobarY,key='geneset',value='pval',-pathway)
 
-  foobarY3 <- utilityFunctions::outerSapplyParallel( utilityFunctions::fisherWrapperOR, all.gs, adListensg2,foo2ensg$GeneID)
+  foobarY3 <- AMPAD::outerSapplyParallel( AMPAD::fisherWrapperOR, all.gs, adListensg2,foo2ensg$GeneID)
   foobarY3 <- data.frame(foobarY3,stringsAsFactors=F)
   foobarY3$pathway <- rownames(foobarY)
   foobarY4<-tidyr::gather(foobarY3,key='geneset',value='OR',-pathway)

@@ -17,13 +17,13 @@ buildAggregateNonADModules <- function(fullManifestOfDAta){
   #re-run enrichment analysis of full module set for these lists
 
   indModsList <- lapply(unique(indMods$ModuleNameFull),
-                        utilityFunctions::listify,
+                        AMPAD::listify,
                         indMods$GeneID,
                         indMods$ModuleNameFull)
   names(indModsList) <- unique(indMods$ModuleNameFull)
   allgenes <- unique(indMods$GeneID)
 
-  enrichmentMatrix <- utilityFunctions::outerSapply( utilityFunctions::fisherWrapperPval,
+  enrichmentMatrix <- AMPAD::outerSapply( AMPAD::fisherWrapperPval,
                                                      indModsList,
                                                      all.gs,
                                                      allgenes)
@@ -48,7 +48,7 @@ buildAggregateNonADModules <- function(fullManifestOfDAta){
   pairMods <- synapser::synTableQuery("SELECT * FROM syn10339153 where ModuleNameFull like '%DLPFC' and category like '%DLPFC'")$asDataFrame()
   pairMods <- pairMods[,-c(1,2)]
   library(dplyr)
-  pairMods <- pairMods %>% utilityFunctions::removeSwappedDupKeyValueDf() %>%
+  pairMods <- pairMods %>% AMPAD::removeSwappedDupKeyValueDf() %>%
     dplyr::mutate(adj=p.adjust(fisherPval,method='bonferroni')) %>%
     dplyr::filter(adj<=0.05) %>%
     dplyr::filter(from%in%enrMatDLPFC$ModuleNameFull & to %in% enrMatDLPFC$ModuleNameFull) %>%
@@ -61,7 +61,7 @@ buildAggregateNonADModules <- function(fullManifestOfDAta){
   pairMods <- synapser::synTableQuery("SELECT * FROM syn10339153 where ModuleNameFull like '%TCX' and category like '%TCX'")$asDataFrame()
   pairMods <- pairMods[,-c(1,2)]
   library(dplyr)
-  pairMods <- pairMods %>% utilityFunctions::removeSwappedDupKeyValueDf() %>%
+  pairMods <- pairMods %>% AMPAD::removeSwappedDupKeyValueDf() %>%
     dplyr::mutate(adj=p.adjust(fisherPval,method='bonferroni')) %>%
     dplyr::filter(adj<=0.05) %>%
     dplyr::filter(from%in%enrMatTCX$ModuleNameFull & to %in% enrMatTCX$ModuleNameFull) %>%
@@ -73,7 +73,7 @@ buildAggregateNonADModules <- function(fullManifestOfDAta){
   enrMatCBE <- dplyr::filter(enrichmentMatrix4,brainRegion == 'CBE')
   pairMods <- synapser::synTableQuery("SELECT * FROM syn10339153 where ModuleNameFull like '%CBE' and category like '%CBE'")$asDataFrame()
   pairMods <- pairMods[,-c(1,2)]
-  pairMods <- pairMods %>% utilityFunctions::removeSwappedDupKeyValueDf() %>%
+  pairMods <- pairMods %>% AMPAD::removeSwappedDupKeyValueDf() %>%
     dplyr::mutate(adj=p.adjust(fisherPval,method='bonferroni')) %>%
     dplyr::filter(adj<=0.05) %>%
     dplyr::filter(from%in%enrMatCBE$ModuleNameFull & to %in% enrMatCBE$ModuleNameFull) %>%
@@ -88,7 +88,7 @@ buildAggregateNonADModules <- function(fullManifestOfDAta){
   pairMods <- pairMods[,-c(1,2)]
   #pairMods <- read.csv('fp_pairwise.csv',stringsAsFactors = F)
   #pairMods <- pairMods[,-c(1,2)]
-  pairMods <- pairMods %>% utilityFunctions::removeSwappedDupKeyValueDf() %>%
+  pairMods <- pairMods %>% AMPAD::removeSwappedDupKeyValueDf() %>%
     dplyr::mutate(adj=p.adjust(fisherPval,method='bonferroni')) %>%
     dplyr::filter(adj<=0.05) %>%
     dplyr::filter(from%in%enrMatFP$ModuleNameFull & to %in% enrMatFP$ModuleNameFull) %>%
@@ -103,7 +103,7 @@ buildAggregateNonADModules <- function(fullManifestOfDAta){
   pairMods <- pairMods[,-c(1,2)]
   #pairMods <- read.csv('fp_pairwise.csv',stringsAsFactors = F)
   #pairMods <- pairMods[,-c(1,2)]
-  pairMods <- pairMods %>% utilityFunctions::removeSwappedDupKeyValueDf() %>%
+  pairMods <- pairMods %>% AMPAD::removeSwappedDupKeyValueDf() %>%
     dplyr::mutate(adj=p.adjust(fisherPval,method='bonferroni')) %>%
     dplyr::filter(adj<=0.05) %>%
     dplyr::filter(from%in%enrMatSTG$ModuleNameFull & to %in% enrMatSTG$ModuleNameFull) %>%
@@ -118,7 +118,7 @@ buildAggregateNonADModules <- function(fullManifestOfDAta){
   pairMods <- pairMods[,-c(1,2)]
   #pairMods <- read.csv('fp_pairwise.csv',stringsAsFactors = F)
   #pairMods <- pairMods[,-c(1,2)]
-  pairMods <- pairMods %>% utilityFunctions::removeSwappedDupKeyValueDf() %>%
+  pairMods <- pairMods %>% AMPAD::removeSwappedDupKeyValueDf() %>%
     dplyr::mutate(adj=p.adjust(fisherPval,method='bonferroni')) %>%
     dplyr::filter(adj<=0.05) %>%
     dplyr::filter(from%in%enrMatIFG$ModuleNameFull & to %in% enrMatIFG$ModuleNameFull) %>%
@@ -133,7 +133,7 @@ buildAggregateNonADModules <- function(fullManifestOfDAta){
   pairMods <- pairMods[,-c(1,2)]
   #pairMods <- read.csv('fp_pairwise.csv',stringsAsFactors = F)
   #pairMods <- pairMods[,-c(1,2)]
-  pairMods <- pairMods %>% utilityFunctions::removeSwappedDupKeyValueDf() %>%
+  pairMods <- pairMods %>% AMPAD::removeSwappedDupKeyValueDf() %>%
     dplyr::mutate(adj=p.adjust(fisherPval,method='bonferroni')) %>%
     dplyr::filter(adj<=0.05) %>%
     dplyr::filter(from%in%enrMatPHG$ModuleNameFull & to %in% enrMatPHG$ModuleNameFull) %>%

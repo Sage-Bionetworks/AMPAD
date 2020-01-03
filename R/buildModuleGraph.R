@@ -72,7 +72,7 @@ buildModuleGraph <- function(pairwise,allMods,tissueType){
                  MoreArgs = list(tissueType=tissueType),
                  SIMPLIFY=F)
   res$df <- do.call(rbind,res$df)
-  exg <- utilityFunctions::convertEnsemblToHgnc(res$df$GeneID)
+  exg <- AMPAD::convertEnsemblToHgnc(res$df$GeneID)
   if(sum(duplicated(exg))>0){
     exg <- exg[which(!duplicated(exg)),]
   }

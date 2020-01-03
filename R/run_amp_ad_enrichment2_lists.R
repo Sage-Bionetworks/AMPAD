@@ -13,12 +13,12 @@ run_amp_ad_enrichment2_lists <- function(geneSetList,
   #OUTPUT:
   #data frame with module name, gene set name, p-value, and odds ratio of enrichment, intersections, and gene set sizes
   straightHgncConversion <- function(x){
-    y<-utilityFunctions::convertHgncToEnsembl(x)
+    y<-AMPAD::convertHgncToEnsembl(x)
     return(unique(y$ensembl_gene_id))
   }
 
   straightEnsemblConversion <- function(x){
-    y<- utilityFunctions::convertEnsemblToHgnc(x)
+    y<- AMPAD::convertEnsemblToHgnc(x)
     return(unique(y$external_gene_name))
   }
 
@@ -45,7 +45,7 @@ run_amp_ad_enrichment2_lists <- function(geneSetList,
   cat('running enrichments....\n')
 
   res <- list()
-  res$fisher <- utilityFunctions::outerSapplyParallel(utilityFunctions::fisherWrapper,
+  res$fisher <- AMPAD::outerSapplyParallel(AMPAD::fisherWrapper,
                                                       refGeneSetList,
                                                       geneSetList,
                                                       refGeneSet)
@@ -59,7 +59,7 @@ run_amp_ad_enrichment2_lists <- function(geneSetList,
     return(length(intersect(x,y)))
   }
 
-  res$inter <- utilityFunctions::outerSapplyParallel(sizeOfInter,
+  res$inter <- AMPAD::outerSapplyParallel(sizeOfInter,
                                                      refGeneSetList,
                                                      geneSetList)
 
