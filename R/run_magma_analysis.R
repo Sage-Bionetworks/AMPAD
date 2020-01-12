@@ -156,6 +156,11 @@ run_magma_analysis = function(outputFile=FALSE){
   g <- g + ggplot2::xlab("Module")
   g <- g+ ggplot2::ylab("FDR")
   g <- g + ggplot2::scale_y_continuous(trans = "log10")
+  g <- g + ggplot2::scale_fill_manual(values = c('#fefd11',
+                                                  '#18bebf',
+                                                  '#a82828',
+                                                  '#34cc37',
+                                                  '#470606'))
   #g <- g + ggplot2::theme_bw()
   #g <- g + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
   g <- g + AMPAD::cowplot_rotated(11)
