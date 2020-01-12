@@ -51,7 +51,9 @@ getAdGenetics2 <- function(synId='syn10338156'){
   adList <- adList[-which(adList=='HLA-DRB5-DRB1')]
   adList <- adList[-which(adList=='PSEN1' | adList =='PSEN2' | adList =='APP' | adList == 'P2K2B')]
 
+
   adList <- list(igap = adList)
+
   adList$dbgap <- dbgap$`Alzheimer Disease`
   adList$kegg <- kegg$`Alzheimer's disease_Homo sapiens_hsa05010`
   adList$wikipathwaysMouse <- wikipathways$`Alzheimers Disease_Mus musculus_WP2075`
