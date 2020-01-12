@@ -23,15 +23,15 @@ collateEnrichmentSets = function(){
   adList <- adList[-which(adList=='PSEN1' | adList =='PSEN2' | adList =='APP' | adList == 'P2K2B')]
   adList <- list(igap = adList)
   adList$dbgap <- dbgap$`Alzheimer Disease`
-  adList$kegg <- kegg$`Alzheimer's disease_Homo sapiens_hsa05010`
-  adList$wikipathwaysMouse <- wikipathways$`Alzheimers Disease_Mus musculus_WP2075`
-  adList$wikipathwaysHuman <- wikipathways$`Alzheimers Disease_Homo sapiens_WP2059`
-  adList$jensenDisease <- jensen_diseases$`Alzheimer's_disease`
-  adList$biocarta <- biocarta$`Deregulation of CDK5 in Alzheimers Disease_Homo sapiens_h_p35alzheimersPathway`
-  adList$pantherAmyloid <- panther$`Alzheimer disease-amyloid secretase pathway_Homo sapiens_P00003`
-  adList$pantherPresenilin <- panther$`Alzheimer disease-presenilin pathway_Homo sapiens_P00004`
-  adList$omim <- omim_disease$`alzheimer_disease`
-  adList$omimExpanded <- omim_expanded$`alzheimer_disease`
+  adList$kegg <- kegg$`Alzheimer's disease Homo sapiens hsa05010`
+  adList$wikipathwaysMouse <- wikipathways$`Alzheimers Disease Mus musculus WP2075`
+  adList$wikipathwaysHuman <- wikipathways$`Alzheimers Disease Homo sapiens WP2059`
+  adList$jensenDisease <- jensen_diseases$`Alzheimer's disease`
+  adList$biocarta <- biocarta$`Deregulation of CDK5 in Alzheimers Disease Homo sapiens h p35alzheimersPathway`
+  adList$pantherAmyloid <- panther$`Alzheimer disease-amyloid secretase pathway Homo sapiens P00003`
+  adList$pantherPresenilin <- panther$`Alzheimer disease-presenilin pathway Homo sapiens P00004`
+  adList$omim <- omim_disease$`alzheimer disease`
+  adList$omimExpanded <- omim_expanded$`alzheimer disease`
 
   genecardsObj <- synapser::synGet('syn10507702')
   genecards <- data.table::fread(genecardsObj$path,data.table=F)

@@ -1,4 +1,4 @@
-make_dot_plot <- function(dummyDf,xlab,ylab,cowsize=11,outputFile=FALSE,fileName='test.tiff'){
+make_dot_plot <- function(dummyDf,xlab,ylab,cowsize=11,outputFile=FALSE,fileName='test.tiff',scaleValue=1.8){
   customDf <- data.frame(moduleName=c('TCXblue',
                                       'IFGyellow',
                                       'PHGyellow',
@@ -83,12 +83,17 @@ make_dot_plot <- function(dummyDf,xlab,ylab,cowsize=11,outputFile=FALSE,fileName
 
   g <- g + ggplot2::labs(y = ylab,
                          x = xlab)
-
   g <- g + AMPAD::cowplot_rotated(cowsize)
+
+  g <- g + ggplot2::scale_color_manual(values = c('#fefd11',
+                                                  '#18bebf',
+                                                  '#a82828',
+                                                  '#34cc37',
+                                                  '#470606'))
 
   if(outputFile){
     g
-    ggplot2::ggsave(fileName,device='tiff',units='mm',width=85,height=85,scale=1.8)
+    ggplot2::ggsave(fileName,device='tiff',units='mm',width=85,height=85,scale=scaleValue)
   }
   return(g)
 }

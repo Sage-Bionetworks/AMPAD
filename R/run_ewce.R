@@ -149,6 +149,11 @@ run_ewce <- function(outputFile=FALSE){
   #g <- g + ggplot2::ggtitle('Enrichment for Cell Type Specific Signatures')
   g <- g + ggplot2::labs(y = 'Lake et al. Cell Type Signature',
                          x = 'AD Coexpression Module')
+  g <- g + ggplot2::scale_color_manual(values = c('#fefd11',
+                                                  '#18bebf',
+                                                  '#a82828',
+                                                  '#34cc37',
+                                                  '#470606'))
   g <- g + AMPAD::cowplot_rotated(11)
 
 

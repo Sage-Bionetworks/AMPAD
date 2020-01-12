@@ -20,6 +20,9 @@ Make the pairwise enrichment plot (Figure 1B)
 ```{r}
 synapser::synLogin()
 AMPAD::pairwiseMatrixOfEnrichments('syn11932957')
+AMPAD::pairwiseMatrixOfEnrichments('syn11932957',
+                                   outputFile = T,
+                                   fileName1 = '~/Desktop/updatedFiguresJan72020/figure1b.tiff')
 ```
 
 
@@ -106,6 +109,11 @@ g<-AMPAD::make_dot_plot(dummyDf,
                  xlab='AD Coexpression Module',
                  ylab='Cell Type Signature')
 g
+g<-AMPAD::make_dot_plot(dummyDf,
+                 xlab='AD Coexpression Module',
+                 ylab='Cell Type Signature',
+                 outputFile = TRUE,
+                 fileName = '~/Desktop/updatedFiguresJan72020/figure1c.tiff')
 ```
 
 Plot from Figure S2B
@@ -120,6 +128,11 @@ g<-AMPAD::make_dot_plot(dummyDf,
                  xlab='AD Coexpression Module',
                  ylab='Lake et al. Cell Type Signature')
 g
+g<-AMPAD::make_dot_plot(dummyDf,
+                 xlab='AD Coexpression Module',
+                 ylab='Lake et al. Cell Type Signature',
+                 outputFile = TRUE,
+                 fileName = '~/Desktop/updatedFiguresJan72020/figureS2b.tiff')
 ```
 
 Plot for figure S6B
@@ -135,6 +148,13 @@ g<-AMPAD::make_dot_plot(dummyDf,
                  xlab='AD Coexpression Module',
                  ylab='CommonMind Differentially Expressed Module')
 g
+g<-AMPAD::make_dot_plot(dummyDf,
+                 xlab='AD Coexpression Module',
+                 ylab='CommonMind Differentially Expressed Module',
+                 outputFile = TRUE,
+                 fileName = '~/Desktop/updatedFiguresJan72020/figures6b.tiff')
+
+
 ```
 
 plot from figure S6C
@@ -150,6 +170,12 @@ g<-AMPAD::make_dot_plot(dummyDf,
                  xlab='AD Coexpression Module',
                  ylab='Zhang et al. Module')
 g
+
+g<-AMPAD::make_dot_plot(dummyDf,
+                 xlab='AD Coexpression Module',
+                 ylab='Zhang et al. Module',
+                 outputFile = TRUE,
+                 fileName = '~/Desktop/updatedFiguresJan72020/figures6c.tiff')
 ```
 
 Plot from figure 1D
@@ -159,6 +185,32 @@ dummyDf <- targetedEnrichment$ad
 dummyDf$fisherOR[dummyDf$adj.pval>=0.05] <- NA
 dummyDf <- dplyr::left_join(dummyDf,modMeta)
 #dummyDf$ModuleBrainRegion <- factor(dummyDf$ModuleBrainRegion,levels = unique(dummyDf$ModuleBrainRegion))
+dummyDf <- dplyr::filter(dummyDf,category!='Nominated_targets' & category!='Mayo_simple' & category != 'omim')
+
+
+dummyDf$category <- gsub('Mayo_comprehensive',
+                         'Mayo_RNAseq',
+                         dummyDf$category)
+# dummyDf$category <- factor(dummyDf$category,
+#                            levels = rev(c('genecards',
+#                                        'pantherPresenilin',
+#                                        'dbgap',
+#                                        'igap',
+#                                        'jensenDisease',
+#                                        'omimExpanded',
+#                                        'biocarta',
+#                                        'wikipathwaysMouse',
+#                                        'wikipathwaysHuman',
+#                                        'pantherAmyloid',
+#                                        'kegg',                                       
+#                                        'omim',
+#                                        'Nominated_targets',
+#                                        'MSSM',
+#                                        'Mayo_simple',
+#                                        'Mayo_comprehensive',
+#                                        'Emory',
+#                                        'Columbia_Broad_Rush_m109')))
+
 dummyDf$category <- factor(dummyDf$category,
                            levels = rev(c('genecards',
                                        'pantherPresenilin',
@@ -171,18 +223,23 @@ dummyDf$category <- factor(dummyDf$category,
                                        'wikipathwaysHuman',
                                        'pantherAmyloid',
                                        'kegg',                                       
-                                       'omim',
-                                       'Nominated_targets',
                                        'MSSM',
-                                       'Mayo_simple',
-                                       'Mayo_comprehensive',
+                                       'Mayo_RNAseq',
                                        'Emory',
                                        'Columbia_Broad_Rush_m109')))
+
+
 g<-AMPAD::make_dot_plot(dummyDf,
                  xlab='AD Coexpression Module',
                  ylab='AD Signature')
 g
 
+g<-AMPAD::make_dot_plot(dummyDf,
+                 xlab='AD Coexpression Module',
+                 ylab='AD Signature',
+                 outputFile = TRUE,
+                 fileName = '~/Desktop/updatedFiguresJan72020/figure1d.tiff',
+                 scaleValue = 2)
 ```
 
 plot from figure 4D
@@ -205,6 +262,11 @@ g<-AMPAD::make_dot_plot(dummyDf,
                  ylab='DEG Sex Specific Meta Analysis')
 g
 
+g<-AMPAD::make_dot_plot(dummyDf,
+                 xlab='AD Coexpression Module',
+                 ylab='DEG Sex Specific Meta Analysis',
+                 outputFile = TRUE,
+                 fileName = '~/Desktop/updatedFiguresJan72020/figure4d.tiff')
 ```
 
 
