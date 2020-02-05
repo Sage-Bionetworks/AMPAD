@@ -185,12 +185,27 @@ dummyDf <- targetedEnrichment$ad
 dummyDf$fisherOR[dummyDf$adj.pval>=0.05] <- NA
 dummyDf <- dplyr::left_join(dummyDf,modMeta)
 #dummyDf$ModuleBrainRegion <- factor(dummyDf$ModuleBrainRegion,levels = unique(dummyDf$ModuleBrainRegion))
-dummyDf <- dplyr::filter(dummyDf,category!='Nominated_targets' & category!='Mayo_simple' & category != 'omim')
+dummyDf <- dplyr::filter(dummyDf,category!='Nominated_targets' & category!='Mayo_simple' & category != 'omim' & category != 'jensenDisease' & category != 'wikipathwaysMouse' & category != 'pantherAmyloid')
 
 
 dummyDf$category <- gsub('Mayo_comprehensive',
-                         'Mayo_RNAseq',
+                         'Mayo Oligo Modules',
                          dummyDf$category)
+
+
+dummyDf$category <- gsub('Columbia_Broad_Rush_m109',
+                         'ROSMAP m109',
+                         dummyDf$category)
+
+dummyDf$category <- gsub('Emory',
+                         'Emory AD Modules',
+                         dummyDf$category)
+
+dummyDf$category <- gsub('MSSM',
+                         'MSSM Oligo Modules',
+                         dummyDf$category)
+
+
 # dummyDf$category <- factor(dummyDf$category,
 #                            levels = rev(c('genecards',
 #                                        'pantherPresenilin',
@@ -216,12 +231,9 @@ dummyDf$category <- factor(dummyDf$category,
                                        'pantherPresenilin',
                                        'dbgap',
                                        'igap',
-                                       'jensenDisease',
                                        'omimExpanded',
                                        'biocarta',
-                                       'wikipathwaysMouse',
                                        'wikipathwaysHuman',
-                                       'pantherAmyloid',
                                        'kegg',                                       
                                        'MSSM',
                                        'Mayo_RNAseq',
@@ -238,7 +250,7 @@ g<-AMPAD::make_dot_plot(dummyDf,
                  xlab='AD Coexpression Module',
                  ylab='AD Signature',
                  outputFile = TRUE,
-                 fileName = '~/Desktop/updatedFiguresJan72020/figure1d.tiff',
+                 fileName = '~/Desktop/updatedFiguresFeb52020/figure1d.tiff',
                  scaleValue = 2)
 ```
 

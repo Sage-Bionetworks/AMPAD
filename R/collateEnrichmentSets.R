@@ -41,7 +41,7 @@ collateEnrichmentSets = function(){
   #load mckenzie oligo data
   mckenzieObj1 <- synapser::synGet('syn21482836')
   mckenzie <- data.table::fread(mckenzieObj1$path,data.table = F)
-  adList$MSSM <- dplyr::filter(mckenzie,Module == 'Red' | Module == 'List green' | Module == 'Green')$Gene_Symbol
+  adList$MSSM <- dplyr::filter(mckenzie,Module == 'Red' | Module == 'Light green' | Module == 'Green')$Gene_Symbol
   enrichmentSets$MSSM2 <- AMPAD::listifyWrapper(mckenzie$Module,mckenzie$Gene_Symbol)
 
 
