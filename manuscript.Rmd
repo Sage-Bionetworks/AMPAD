@@ -185,15 +185,17 @@ dummyDf <- targetedEnrichment$ad
 dummyDf$fisherOR[dummyDf$adj.pval>=0.05] <- NA
 dummyDf <- dplyr::left_join(dummyDf,modMeta)
 #dummyDf$ModuleBrainRegion <- factor(dummyDf$ModuleBrainRegion,levels = unique(dummyDf$ModuleBrainRegion))
+
+
+
 dummyDf <- dplyr::filter(dummyDf,category!='Nominated_targets' & category!='Mayo_simple' & category != 'omim' & category != 'jensenDisease' & category != 'wikipathwaysMouse' & category != 'pantherAmyloid')
 
 
-dummyDf$category <- gsub('Mayo_comprehensive',
+dummyDf$category <- gsub('Mayo\\_comprehensive',
                          'Mayo Oligo Modules',
                          dummyDf$category)
 
-
-dummyDf$category <- gsub('Columbia_Broad_Rush_m109',
+dummyDf$category <- gsub('Columbia\\_Broad\\_Rush\\_m109',
                          'ROSMAP m109',
                          dummyDf$category)
 
@@ -203,6 +205,38 @@ dummyDf$category <- gsub('Emory',
 
 dummyDf$category <- gsub('MSSM',
                          'MSSM Oligo Modules',
+                         dummyDf$category)
+
+dummyDf$category <- gsub('igap',
+                         'IGAP',
+                         dummyDf$category)
+
+dummyDf$category <- gsub('biocarta',
+                         'Biocarta',
+                         dummyDf$category)
+
+dummyDf$category <- gsub('genecards',
+                         'Genecards',
+                         dummyDf$category)
+
+dummyDf$category <- gsub('kegg',
+                         'KEGG',
+                         dummyDf$category)
+
+dummyDf$category <- gsub('wikipathwaysHuman',
+                         'Wikipathways Human',
+                         dummyDf$category)
+
+dummyDf$category <- gsub('pantherPresenilin',
+                         'Panther Presenilin',
+                         dummyDf$category)
+
+dummyDf$category <- gsub('dbgap',
+                         'dbGaP',
+                         dummyDf$category)
+
+dummyDf$category <- gsub('omimExpanded',
+                         'OMIM Expanded',
                          dummyDf$category)
 
 
@@ -227,18 +261,18 @@ dummyDf$category <- gsub('MSSM',
 #                                        'Columbia_Broad_Rush_m109')))
 
 dummyDf$category <- factor(dummyDf$category,
-                           levels = rev(c('genecards',
-                                       'pantherPresenilin',
-                                       'dbgap',
-                                       'igap',
-                                       'omimExpanded',
-                                       'biocarta',
-                                       'wikipathwaysHuman',
-                                       'kegg',                                       
-                                       'MSSM',
-                                       'Mayo_RNAseq',
-                                       'Emory',
-                                       'Columbia_Broad_Rush_m109')))
+                           levels = rev(c('Genecards',
+                                       'Panther Presenilin',
+                                       'dbGaP',
+                                       'IGAP',
+                                       'OMIM Expanded',
+                                       'Biocarta',
+                                       'Wikipathways Human',
+                                       'KEGG',                                       
+                                       'MSSM Oligo Modules',
+                                       'Mayo Oligo Modules',
+                                       'Emory AD Modules',
+                                       'ROSMAP m109')))
 
 
 g<-AMPAD::make_dot_plot(dummyDf,
@@ -248,7 +282,7 @@ g
 
 g<-AMPAD::make_dot_plot(dummyDf,
                  xlab='AD Coexpression Module',
-                 ylab='AD Signature',
+                 ylab='AD Gene Set',
                  outputFile = TRUE,
                  fileName = '~/Desktop/updatedFiguresFeb52020/figure1d.tiff',
                  scaleValue = 2)
